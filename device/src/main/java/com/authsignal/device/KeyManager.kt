@@ -2,10 +2,10 @@ package com.authsignal.device
 
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
+import android.util.Base64
 import java.security.KeyPairGenerator
 import java.security.KeyStore
 import java.security.spec.X509EncodedKeySpec
-import java.util.Base64
 
 object KeyManager {
   private const val keyName = "authsignal_signing_key"
@@ -44,7 +44,7 @@ object KeyManager {
   fun derivePublicKey(key: KeyStore.PrivateKeyEntry): String {
     val spec = X509EncodedKeySpec(key.certificate.publicKey.encoded)
 
-    return Base64.getEncoder().encodeToString(spec.encoded)
+    return Base64.encode(spec.encoded, Base64.DEFAULT).toString()
   }
 
   private fun createKeyPair(): String? {
@@ -64,7 +64,7 @@ object KeyManager {
 
       val keyPair = generator.generateKeyPair()
 
-      Base64.getEncoder().encodeToString(keyPair.public.encoded)
+      Base64.encode(keyPair.public.encoded, Base64.DEFAULT).toString()
     } catch (e: java.lang.Exception) {
       null
     }
