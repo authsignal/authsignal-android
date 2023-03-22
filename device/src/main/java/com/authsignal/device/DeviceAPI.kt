@@ -11,7 +11,7 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
-class DeviceAPI(private val tenantId: String) {
+class DeviceAPI() {
   private val baseUrl = BuildConfig.BASE_URL
 
   private val client = HttpClient(Android) {
@@ -24,32 +24,40 @@ class DeviceAPI(private val tenantId: String) {
   }
 
   suspend fun addCredential(accessToken: String, publicKey: String): Boolean {
-    val response = client.post("$baseUrl/add-credential") {
+    val url = "$baseUrl/add-credential"
+    val body = AddCredentialRequest(publicKey)
+
+    val response = client.post(url) {
       contentType(ContentType.Application.Json)
+      setBody(body)
 
       headers {
         append(HttpHeaders.Authorization, "Bearer $accessToken")
       }
-
-      setBody(AddCredentialRequest(publicKey))
     }
 
     return response.status == HttpStatusCode.OK
   }
 
   suspend fun removeCredential(publicKey: String, signature: String): Boolean {
-    val response = client.post("$baseUrl/remove-credential") {
+    val url = "$baseUrl/remove-credential"
+    val body = RemoveCredentialRequest(publicKey, signature)
+
+    val response = client.post(url) {
       contentType(ContentType.Application.Json)
-      setBody(RemoveCredentialRequest(tenantId, publicKey, signature))
+      setBody(body)
     }
 
     return response.status == HttpStatusCode.OK
   }
 
   suspend fun getChallenge(publicKey: String): String? {
-    val response = client.post("$baseUrl/get-challenge") {
+    val url = "$baseUrl/get-challenge"
+    val body = GetChallengeRequest(publicKey)
+
+    val response = client.post(url) {
       contentType(ContentType.Application.Json)
-      setBody(GetChallengeRequest(tenantId, publicKey))
+      setBody(body)
     }
 
     return if (response.status == HttpStatusCode.OK) {
@@ -65,9 +73,16 @@ class DeviceAPI(private val tenantId: String) {
     signature: String,
     approved: Boolean
   ): Boolean {
-    val response = client.post("$baseUrl/update-challenge") {
+    val url = "$baseUrl/update-challenge"
+    val body = UpdateChallengeRequest(
+      publicKey,
+      challengeId,
+      signature,
+      approved)
+
+    val response = client.post(url) {
       contentType(ContentType.Application.Json)
-      setBody(UpdateChallengeRequest(tenantId, publicKey, challengeId, signature, approved))
+      setBody(body)
     }
 
     return response.status == HttpStatusCode.OK
@@ -78,17 +93,16 @@ class DeviceAPI(private val tenantId: String) {
 data class AddCredentialRequest(val publicKey: String)
 
 @Serializable
-data class RemoveCredentialRequest(val tenantId: String, val publicKey: String, val signature: String)
+data class RemoveCredentialRequest(val publicKey: String, val signature: String)
 
 @Serializable
-data class GetChallengeRequest(val tenantId: String, val publicKey: String)
+data class GetChallengeRequest(val publicKey: String)
 
 @Serializable
 data class GetChallengeResponse(val sessionToken: String? = null)
 
 @Serializable
 data class UpdateChallengeRequest(
-  val tenantId: String,
   val publicKey: String,
   val sessionToken: String,
   val signature: String,
