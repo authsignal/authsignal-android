@@ -14,9 +14,11 @@ class AuthsignalDevice() {
 
     val publicKey = KeyManager.derivePublicKey(key)
 
-    val signature = Signer.sign("authsignal-remove-credential", key) ?: return false
+    val challengeId = api.startChallenge(publicKey) ?: return false
 
-    val success = api.removeCredential(publicKey, signature)
+    val signature = Signer.sign(challengeId, key) ?: return false
+
+    val success = api.removeCredential(challengeId, publicKey, signature)
 
     if (success) {
       KeyManager.deleteKey()

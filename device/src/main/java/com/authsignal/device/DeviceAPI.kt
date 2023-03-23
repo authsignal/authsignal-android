@@ -39,9 +39,9 @@ class DeviceAPI() {
     return response.status == HttpStatusCode.OK
   }
 
-  suspend fun removeCredential(publicKey: String, signature: String): Boolean {
+  suspend fun removeCredential(challengeId: String, publicKey: String, signature: String): Boolean {
     val url = "$baseUrl/remove-credential"
-    val body = RemoveCredentialRequest(publicKey, signature)
+    val body = RemoveCredentialRequest(challengeId, publicKey, signature)
 
     val response = client.post(url) {
       contentType(ContentType.Application.Json)
@@ -51,9 +51,9 @@ class DeviceAPI() {
     return response.status == HttpStatusCode.OK
   }
 
-  suspend fun getChallenge(publicKey: String): String? {
-    val url = "$baseUrl/get-challenge"
-    val body = GetChallengeRequest(publicKey)
+  suspend fun startChallenge(publicKey: String): String? {
+    val url = "$baseUrl/start-challenge"
+    val body = ChallengeRequest(publicKey)
 
     val response = client.post(url) {
       contentType(ContentType.Application.Json)
@@ -61,7 +61,23 @@ class DeviceAPI() {
     }
 
     return if (response.status == HttpStatusCode.OK) {
-      response.body<GetChallengeResponse>().sessionToken
+      response.body<ChallengeResponse>().sessionToken
+    } else {
+      null;
+    }
+  }
+
+  suspend fun getChallenge(publicKey: String): String? {
+    val url = "$baseUrl/get-challenge"
+    val body = ChallengeRequest(publicKey)
+
+    val response = client.post(url) {
+      contentType(ContentType.Application.Json)
+      setBody(body)
+    }
+
+    return if (response.status == HttpStatusCode.OK) {
+      response.body<ChallengeResponse>().sessionToken
     } else {
       null;
     }
@@ -93,13 +109,16 @@ class DeviceAPI() {
 data class AddCredentialRequest(val publicKey: String)
 
 @Serializable
-data class RemoveCredentialRequest(val publicKey: String, val signature: String)
+data class RemoveCredentialRequest(
+  val sessionToken: String,
+  val publicKey: String,
+  val signature: String)
 
 @Serializable
-data class GetChallengeRequest(val publicKey: String)
+data class ChallengeRequest(val publicKey: String)
 
 @Serializable
-data class GetChallengeResponse(val sessionToken: String? = null)
+data class ChallengeResponse(val sessionToken: String? = null)
 
 @Serializable
 data class UpdateChallengeRequest(
