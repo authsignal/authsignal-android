@@ -3,7 +3,6 @@ package com.authsignal.device
 import java.nio.charset.StandardCharsets
 import java.security.KeyStore.PrivateKeyEntry
 import java.security.Signature
-import java.util.Base64
 
 object Signer {
   fun sign(message: String, key: PrivateKeyEntry): String? {
@@ -15,9 +14,9 @@ object Signer {
       signer.initSign(key.privateKey)
       signer.update(msg)
 
-      val signature: ByteArray = signer.sign()
+      val signature = signer.sign()
 
-      Base64.getEncoder().encodeToString(signature)
+      Encoder.toBase64String(signature)
     } catch (e: Exception) {
       null
     }

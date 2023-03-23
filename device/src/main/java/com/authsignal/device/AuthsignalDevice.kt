@@ -1,9 +1,7 @@
 package com.authsignal.device
 
-class AuthsignalDevice(tenantId: String) {
-  private val tenantId = tenantId
-
-  private val api = DeviceAPI(tenantId)
+class AuthsignalDevice() {
+  private val api = DeviceAPI()
 
   suspend fun addCredential(accessToken: String): Boolean {
     val publicKey = KeyManager.getOrCreatePublicKey() ?: return false
@@ -16,9 +14,11 @@ class AuthsignalDevice(tenantId: String) {
 
     val publicKey = KeyManager.derivePublicKey(key)
 
-    val signature = Signer.sign(tenantId, key) ?: return false
+    val challengeId = api.startChallenge(publicKey) ?: return false
 
-    val success = api.removeCredential(publicKey, signature)
+    val signature = Signer.sign(challengeId, key) ?: return false
+
+    val success = api.removeCredential(challengeId, publicKey, signature)
 
     if (success) {
       KeyManager.deleteKey()

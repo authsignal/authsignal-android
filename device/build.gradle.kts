@@ -6,7 +6,7 @@ plugins {
   `maven-publish`
 }
 
-val baseURL: String by extra
+val baseURL: String by project
 
 android {
   namespace = "com.authsignal"
@@ -39,18 +39,23 @@ android {
   }
 }
 
+val pomGroup: String by project
+val pomArtifactId: String by project
+val versionName: String by project
+
 publishing {
   publications {
     register<MavenPublication>("release") {
-      groupId = "com.authsignal"
-      artifactId = "authsignal-android"
-      version = "1.0"
+      groupId = pomGroup
+      artifactId = pomArtifactId
+      version = versionName
 
       afterEvaluate {
         from(components["release"])
       }
     }
   }
+
   repositories {
     maven {
       name = "authsignal-android"
@@ -59,10 +64,12 @@ publishing {
   }
 }
 
+val ktorVersion: String by project
+
 dependencies {
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.7.20")
-  implementation("io.ktor:ktor-client-android:2.2.4")
-  implementation("io.ktor:ktor-client-core:2.2.4")
-  implementation("io.ktor:ktor-client-content-negotiation:2.2.4")
-  implementation("io.ktor:ktor-serialization-kotlinx-json:2.2.4")
+  implementation("io.ktor:ktor-client-android:$ktorVersion")
+  implementation("io.ktor:ktor-client-core:$ktorVersion")
+  implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+  implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
 }
