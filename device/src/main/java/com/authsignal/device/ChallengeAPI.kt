@@ -1,6 +1,5 @@
 package com.authsignal.device
 
-import com.authsignal.BuildConfig
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.android.*
@@ -11,9 +10,7 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
-class DeviceAPI() {
-  private val baseUrl = BuildConfig.BASE_URL
-
+class ChallengeAPI(private val baseURL: String) {
   private val client = HttpClient(Android) {
     install(ContentNegotiation) {
       json(Json {
@@ -24,7 +21,7 @@ class DeviceAPI() {
   }
 
   suspend fun addCredential(accessToken: String, publicKey: String): Boolean {
-    val url = "$baseUrl/add-credential"
+    val url = "$baseURL/device/add-credential"
     val body = AddCredentialRequest(publicKey)
 
     val response = client.post(url) {
@@ -39,9 +36,9 @@ class DeviceAPI() {
     return response.status == HttpStatusCode.OK
   }
 
-  suspend fun removeCredential(challengeId: String, publicKey: String, signature: String): Boolean {
-    val url = "$baseUrl/remove-credential"
-    val body = RemoveCredentialRequest(challengeId, publicKey, signature)
+  suspend fun removeCredential(publicKey: String, signature: String): Boolean {
+    val url = "$baseURL/device/remove-credential"
+    val body = RemoveCredentialRequest(publicKey, signature)
 
     val response = client.post(url) {
       contentType(ContentType.Application.Json)
@@ -51,24 +48,8 @@ class DeviceAPI() {
     return response.status == HttpStatusCode.OK
   }
 
-  suspend fun startChallenge(publicKey: String): String? {
-    val url = "$baseUrl/start-challenge"
-    val body = ChallengeRequest(publicKey)
-
-    val response = client.post(url) {
-      contentType(ContentType.Application.Json)
-      setBody(body)
-    }
-
-    return if (response.status == HttpStatusCode.OK) {
-      response.body<ChallengeResponse>().sessionToken
-    } else {
-      null;
-    }
-  }
-
   suspend fun getChallenge(publicKey: String): String? {
-    val url = "$baseUrl/get-challenge"
+    val url = "$baseURL/device/check-challenge"
     val body = ChallengeRequest(publicKey)
 
     val response = client.post(url) {
@@ -89,7 +70,7 @@ class DeviceAPI() {
     signature: String,
     approved: Boolean
   ): Boolean {
-    val url = "$baseUrl/update-challenge"
+    val url = "$baseURL/device/update-challenge"
     val body = UpdateChallengeRequest(
       publicKey,
       challengeId,
@@ -110,7 +91,6 @@ data class AddCredentialRequest(val publicKey: String)
 
 @Serializable
 data class RemoveCredentialRequest(
-  val sessionToken: String,
   val publicKey: String,
   val signature: String)
 
@@ -126,3 +106,7 @@ data class UpdateChallengeRequest(
   val sessionToken: String,
   val signature: String,
   val approved: Boolean)
+
+enum class AuthsignalRegion {
+  US, AU, EU
+}
