@@ -6,8 +6,6 @@ plugins {
   `maven-publish`
 }
 
-val baseURL: String by project
-
 android {
   namespace = "com.authsignal"
 
@@ -18,8 +16,6 @@ android {
     targetSdk = 33
 
     consumerProguardFiles("consumer-rules.pro")
-
-    buildConfigField("String", "BASE_URL", baseURL)
   }
 
   buildTypes {
