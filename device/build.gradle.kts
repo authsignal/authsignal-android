@@ -1,13 +1,16 @@
+import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
+
 plugins {
   id("com.android.library")
   id("kotlin-android")
   id("kotlinx-serialization")
 
   `maven-publish`
+  signing
 }
 
 android {
-  namespace = "com.authsignal"
+  namespace = "com.authsignal.device"
 
   compileSdk = 33
 
@@ -27,12 +30,11 @@ android {
       )
     }
   }
+}
 
-  publishing {
-    multipleVariants {
-      allVariants()
-    }
-  }
+val sourcesJar by tasks.creating(Jar::class) {
+  archiveClassifier.set("sources")
+  from(android.sourceSets.getByName("main").java.srcDirs)
 }
 
 val pomGroup: String by project
@@ -41,23 +43,60 @@ val versionName: String by project
 
 publishing {
   publications {
-    register<MavenPublication>("release") {
+    create<MavenPublication>("Authsignal") {
       groupId = pomGroup
       artifactId = pomArtifactId
       version = versionName
 
-      afterEvaluate {
-        from(components["release"])
+      artifact("$buildDir/outputs/aar/device-release.aar")
+
+      pom.withXml {
+        asNode().apply {
+          appendNode("name", "authsignal-android")
+          appendNode("description", "The official Authsignal SDK for Android.")
+          appendNode("url", "https://github.com/authsignal/authsignal-android")
+          appendNode("licenses").apply {
+            appendNode("license").apply {
+              appendNode("name", "MIT")
+              appendNode("url", "https://github.com/authsignal/authsignal-android/blob/main/LICENSE.md")
+            }
+          }
+          appendNode("developers").apply {
+            appendNode("developer").apply {
+              appendNode("id", "Authsignal")
+              appendNode("name", "Authsignal")
+            }
+          }
+          appendNode("scm").apply {
+            appendNode("connection", "scm:git:github.com/authsignal/authsignal-android.git")
+            appendNode("developerConnection", "scm:git:ssh://github.com/authsignal/authsignal-android.git")
+            appendNode("url", "https://github.com/authsignal/authsignal-android/tree/main")
+          }
+          appendNode("dependencies").apply {
+            project.configurations["releaseImplementation"].allDependencies.forEach {
+              appendNode("dependency").apply {
+                appendNode("groupId", it.group)
+                appendNode("artifactId", it.name)
+                appendNode("version", it.version)
+              }
+            }
+          }
+        }
       }
     }
   }
+}
 
-  repositories {
-    maven {
-      name = "authsignal-android"
-      url = uri("${project.buildDir}/repo")
-    }
-  }
+signing {
+  val properties = gradleLocalProperties(rootDir)
+
+  useInMemoryPgpKeys(
+    properties.getProperty("signing.keyId"),
+    properties.getProperty("signing.key"),
+    properties.getProperty("signing.password"),
+  )
+
+  sign(publishing.publications)
 }
 
 val ktorVersion: String by project
