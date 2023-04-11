@@ -68,14 +68,16 @@ class ChallengeAPI(private val baseURL: String) {
     challengeId: String,
     publicKey: String,
     signature: String,
-    approved: Boolean
+    approved: Boolean,
+    verificationCode: String?
   ): Boolean {
     val url = "$baseURL/device/update-challenge"
     val body = UpdateChallengeRequest(
       publicKey,
       challengeId,
       signature,
-      approved)
+      approved,
+      verificationCode)
 
     val response = client.post(url) {
       contentType(ContentType.Application.Json)
@@ -105,7 +107,8 @@ data class UpdateChallengeRequest(
   val publicKey: String,
   val sessionToken: String,
   val signature: String,
-  val approved: Boolean)
+  val approved: Boolean,
+  val verificationCode: String?)
 
 enum class AuthsignalRegion {
   US, AU, EU
