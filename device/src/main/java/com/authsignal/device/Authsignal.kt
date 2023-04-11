@@ -46,14 +46,18 @@ class Authsignal(baseURL: String) {
     return api.getChallenge(publicKey)
   }
 
-  suspend fun updateChallenge(challengeId: String, approved: Boolean): Boolean {
+  suspend fun updateChallenge(
+    challengeId: String,
+    approved: Boolean,
+    verificationCode: String? = null
+  ): Boolean {
     val key = KeyManager.getKey() ?: return false
 
     val publicKey = KeyManager.derivePublicKey(key)
 
     val signature = Signer.sign(challengeId, key) ?: return false
 
-    return api.updateChallenge(challengeId, publicKey, signature, approved)
+    return api.updateChallenge(challengeId, publicKey, signature, approved, verificationCode)
   }
 
   private fun getTimeBasedDataToSign(): String {
