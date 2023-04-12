@@ -20,9 +20,12 @@ class ChallengeAPI(private val baseURL: String) {
     }
   }
 
-  suspend fun addCredential(accessToken: String, publicKey: String): Boolean {
+  suspend fun addCredential(
+    accessToken: String,
+    publicKey: String,
+    deviceName: String? = null): Boolean {
     val url = "$baseURL/device/add-credential"
-    val body = AddCredentialRequest(publicKey)
+    val body = AddCredentialRequest(publicKey, deviceName)
 
     val response = client.post(url) {
       contentType(ContentType.Application.Json)
@@ -89,7 +92,10 @@ class ChallengeAPI(private val baseURL: String) {
 }
 
 @Serializable
-data class AddCredentialRequest(val publicKey: String)
+data class AddCredentialRequest(
+  val publicKey: String,
+  val deviceName: String?,
+)
 
 @Serializable
 data class RemoveCredentialRequest(
