@@ -1,7 +1,8 @@
 package com.authsignal.device
 
-import java.time.Instant
+import android.os.Build
 import kotlin.math.floor
+
 
 fun Authsignal(region: AuthsignalRegion = AuthsignalRegion.US): Authsignal {
   val baseURL = when(region) {
@@ -19,7 +20,9 @@ class Authsignal(baseURL: String) {
   suspend fun addCredential(accessToken: String): Boolean {
     val publicKey = KeyManager.getOrCreatePublicKey() ?: return false
 
-    return api.addCredential(accessToken, publicKey)
+    val deviceName = getDeviceName()
+
+    return api.addCredential(accessToken, publicKey, deviceName)
   }
 
   suspend fun removeCredential(): Boolean {
@@ -64,5 +67,16 @@ class Authsignal(baseURL: String) {
     val secondsSinceEpoch = (System.currentTimeMillis() / 1000).toDouble()
 
     return floor(secondsSinceEpoch / (60 * 10)).toString()
+  }
+
+  private fun getDeviceName(): String {
+    val manufacturer = Build.MANUFACTURER
+    val model = Build.MODEL
+
+    if (model.startsWith(manufacturer)) {
+      return model
+    }
+
+    return "$manufacturer $model"
   }
 }
