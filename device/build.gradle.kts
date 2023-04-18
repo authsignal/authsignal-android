@@ -3,7 +3,6 @@ import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 plugins {
   id("com.android.library")
   id("kotlin-android")
-  id("kotlinx-serialization")
 
   `maven-publish`
   signing
@@ -99,12 +98,10 @@ signing {
   sign(publishing.publications)
 }
 
-val ktorVersion: String by project
+val retrofitVersion: String by project
 
 dependencies {
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.7.20")
-  implementation("io.ktor:ktor-client-android:$ktorVersion")
-  implementation("io.ktor:ktor-client-core:$ktorVersion")
-  implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
-  implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
+  implementation("com.squareup.retrofit2:retrofit:$retrofitVersion")
+  implementation("com.squareup.retrofit2:converter-gson:$retrofitVersion")
 }

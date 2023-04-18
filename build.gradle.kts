@@ -2,7 +2,6 @@ import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 
 plugins {
   id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
-  id("org.jetbrains.kotlin.plugin.serialization") version "1.6.21"
 }
 
 buildscript {
