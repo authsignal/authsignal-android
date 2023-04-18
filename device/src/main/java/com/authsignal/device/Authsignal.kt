@@ -1,8 +1,8 @@
 package com.authsignal.device
 
 import android.os.Build
+import com.authsignal.device.models.Credential
 import kotlin.math.floor
-
 
 fun Authsignal(region: AuthsignalRegion = AuthsignalRegion.US): Authsignal {
   val baseURL = when(region) {
@@ -17,12 +17,18 @@ fun Authsignal(region: AuthsignalRegion = AuthsignalRegion.US): Authsignal {
 class Authsignal(baseURL: String) {
   private val api = ChallengeAPI(baseURL)
 
-  suspend fun addCredential(accessToken: String): Boolean {
+  suspend fun getCredential(): Credential? {
+    val publicKey = KeyManager.getPublicKey() ?: return null
+
+    return api.getCredential(publicKey)
+  }
+
+  suspend fun addCredential(accessToken: String, deviceName: String? = null): Boolean {
     val publicKey = KeyManager.getOrCreatePublicKey() ?: return false
 
-    val deviceName = getDeviceName()
+    val device = deviceName ?: getDeviceName()
 
-    return api.addCredential(accessToken, publicKey, deviceName)
+    return api.addCredential(accessToken, publicKey, device)
   }
 
   suspend fun removeCredential(): Boolean {

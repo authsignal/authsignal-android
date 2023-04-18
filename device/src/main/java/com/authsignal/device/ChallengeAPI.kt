@@ -1,5 +1,6 @@
 package com.authsignal.device
 
+import com.authsignal.device.models.Credential
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.android.*
@@ -17,6 +18,28 @@ class ChallengeAPI(private val baseURL: String) {
         prettyPrint = true
         ignoreUnknownKeys = true
       })
+    }
+  }
+
+  suspend fun getCredential(publicKey: String): Credential? {
+    val url = "$baseURL/device/credential"
+    val body = CredentialRequest(publicKey)
+
+    val response = client.post(url) {
+      contentType(ContentType.Application.Json)
+      setBody(body)
+    }
+
+    return if (response.status == HttpStatusCode.OK) {
+      val credentialResponse = response.body<CredentialResponse>()
+
+      Credential(
+        credentialResponse.userAuthenticatorId,
+        credentialResponse.verifiedAt,
+        credentialResponse.lastVerifiedAt
+      )
+    } else {
+      null
     }
   }
 
@@ -52,7 +75,7 @@ class ChallengeAPI(private val baseURL: String) {
   }
 
   suspend fun getChallenge(publicKey: String): String? {
-    val url = "$baseURL/device/check-challenge"
+    val url = "$baseURL/device/challenge"
     val body = ChallengeRequest(publicKey)
 
     val response = client.post(url) {
@@ -63,7 +86,7 @@ class ChallengeAPI(private val baseURL: String) {
     return if (response.status == HttpStatusCode.OK) {
       response.body<ChallengeResponse>().sessionToken
     } else {
-      null;
+      null
     }
   }
 
@@ -90,6 +113,15 @@ class ChallengeAPI(private val baseURL: String) {
     return response.status == HttpStatusCode.OK
   }
 }
+
+@Serializable
+data class CredentialRequest(val publicKey: String)
+
+@Serializable
+data class CredentialResponse(
+  val userAuthenticatorId: String,
+  val verifiedAt: String,
+  val lastVerifiedAt: String)
 
 @Serializable
 data class AddCredentialRequest(
