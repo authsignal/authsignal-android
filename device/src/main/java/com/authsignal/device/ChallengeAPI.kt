@@ -121,7 +121,7 @@ data class CredentialRequest(val publicKey: String)
 data class CredentialResponse(
   val userAuthenticatorId: String,
   val verifiedAt: String,
-  val lastVerifiedAt: String)
+  val lastVerifiedAt: String? = null)
 
 @Serializable
 data class AddCredentialRequest(
