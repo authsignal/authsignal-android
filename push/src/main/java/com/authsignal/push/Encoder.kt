@@ -1,4 +1,4 @@
-package com.authsignal.device
+package com.authsignal.push
 
 import android.util.Base64
 

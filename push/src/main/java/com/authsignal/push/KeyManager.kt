@@ -1,4 +1,4 @@
-package com.authsignal.device
+package com.authsignal.push
 
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties

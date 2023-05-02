@@ -1,4 +1,4 @@
-package com.authsignal.device.models
+package com.authsignal.push.models
 
 data class Credential(
   val credentialId: String,

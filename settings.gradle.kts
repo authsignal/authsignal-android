@@ -6,4 +6,4 @@ pluginManagement {
   }
 }
 rootProject.name = "Authsignal"
-include(":device")
+include(":push")

@@ -1,4 +1,4 @@
-package com.authsignal.device
+package com.authsignal.push
 
 import java.nio.charset.StandardCharsets
 import java.security.KeyStore.PrivateKeyEntry
