@@ -1,6 +1,6 @@
 package com.authsignal.push
 
-import com.authsignal.push.models.Credential
+import com.authsignal.push.models.PushCredential
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.android.*
@@ -21,7 +21,7 @@ class PushAPI(private val baseURL: String) {
     }
   }
 
-  suspend fun getCredential(publicKey: String): Credential? {
+  suspend fun getCredential(publicKey: String): PushCredential? {
     val encodedKey = Encoder.toBase64String(publicKey.toByteArray())
     val url = "$baseURL/device/push/credential?publicKey=$encodedKey"
 
@@ -30,7 +30,7 @@ class PushAPI(private val baseURL: String) {
     return if (response.status == HttpStatusCode.OK) {
       val credentialResponse = response.body<CredentialResponse>()
 
-      Credential(
+      PushCredential(
         credentialResponse.userAuthenticatorId,
         credentialResponse.verifiedAt,
         credentialResponse.lastVerifiedAt

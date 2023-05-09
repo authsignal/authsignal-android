@@ -1,13 +1,13 @@
 package com.authsignal.push
 
 import android.os.Build
-import com.authsignal.push.models.Credential
+import com.authsignal.push.models.PushCredential
 import kotlin.math.floor
 
 class AuthsignalPush(baseURL: String) {
   private val api = PushAPI(baseURL)
 
-  suspend fun getCredential(): Credential? {
+  suspend fun getCredential(): PushCredential? {
     val publicKey = KeyManager.getPublicKey() ?: return null
 
     return api.getCredential(publicKey)
