@@ -21,11 +21,17 @@ class PushAPI(private val clientID: String, private val baseURL: String) {
     }
   }
 
+  private val basicAuth = "Basic ${Encoder.toBase64String("$clientID:".toByteArray())}"
+
   suspend fun getCredential(publicKey: String): PushCredential? {
     val encodedKey = Encoder.toBase64String(publicKey.toByteArray())
     val url = "$baseURL/device/push/credential?publicKey=$encodedKey"
 
-    val response = client.get(url)
+    val response = client.get(url) {
+      headers {
+        append(HttpHeaders.Authorization, basicAuth)
+      }
+    }
 
     return if (response.status == HttpStatusCode.OK) {
       val credentialResponse = response.body<CredentialResponse>()
@@ -33,7 +39,7 @@ class PushAPI(private val clientID: String, private val baseURL: String) {
       PushCredential(
         credentialResponse.userAuthenticatorId,
         credentialResponse.verifiedAt,
-        credentialResponse.lastVerifiedAt
+        credentialResponse.lastVerifiedAt,
       )
     } else {
       null
@@ -43,9 +49,13 @@ class PushAPI(private val clientID: String, private val baseURL: String) {
   suspend fun addCredential(
     accessToken: String,
     publicKey: String,
-    deviceName: String? = null): Boolean {
+    deviceName: String = ""): Boolean {
     val url = "$baseURL/device/push/add-credential"
-    val body = AddCredentialRequest(publicKey, deviceName)
+    val body = AddCredentialRequest(
+      publicKey,
+      deviceName,
+      devicePlatform = "android",
+    )
 
     val response = client.post(url) {
       contentType(ContentType.Application.Json)
@@ -66,6 +76,10 @@ class PushAPI(private val clientID: String, private val baseURL: String) {
     val response = client.post(url) {
       contentType(ContentType.Application.Json)
       setBody(body)
+
+      headers {
+        append(HttpHeaders.Authorization, basicAuth)
+      }
     }
 
     return response.status == HttpStatusCode.OK
@@ -75,10 +89,14 @@ class PushAPI(private val clientID: String, private val baseURL: String) {
     val encodedKey = Encoder.toBase64String(publicKey.toByteArray())
     val url = "$baseURL/device/push/challenge?publicKey=$encodedKey"
 
-    val response = client.get(url)
+    val response = client.get(url) {
+      headers {
+        append(HttpHeaders.Authorization, basicAuth)
+      }
+    }
 
     return if (response.status == HttpStatusCode.OK) {
-      response.body<ChallengeResponse>().sessionToken
+      response.body<ChallengeResponse>().challengeId
     } else {
       null
     }
@@ -102,11 +120,25 @@ class PushAPI(private val clientID: String, private val baseURL: String) {
     val response = client.post(url) {
       contentType(ContentType.Application.Json)
       setBody(body)
+
+      headers {
+        append(HttpHeaders.Authorization, basicAuth)
+      }
     }
 
     return response.status == HttpStatusCode.OK
   }
 }
+
+@Serializable
+data class AddCredentialRequest(
+  val publicKey: String,
+  val deviceName: String,
+  val devicePlatform: String,
+)
+
+@Serializable
+data class ChallengeResponse(val challengeId: String? = null)
 
 @Serializable
 data class CredentialResponse(
@@ -115,23 +147,14 @@ data class CredentialResponse(
   val lastVerifiedAt: String? = null)
 
 @Serializable
-data class AddCredentialRequest(
-  val publicKey: String,
-  val deviceName: String?,
-)
-
-@Serializable
 data class RemoveCredentialRequest(
   val publicKey: String,
   val signature: String)
 
 @Serializable
-data class ChallengeResponse(val sessionToken: String? = null)
-
-@Serializable
 data class UpdateChallengeRequest(
   val publicKey: String,
-  val sessionToken: String,
+  val challengeId: String,
   val signature: String,
   val approved: Boolean,
   val verificationCode: String?)
