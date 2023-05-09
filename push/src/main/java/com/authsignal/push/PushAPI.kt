@@ -11,7 +11,7 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
-class PushAPI(private val baseURL: String) {
+class PushAPI(private val clientID: String, private val baseURL: String) {
   private val client = HttpClient(Android) {
     install(ContentNegotiation) {
       json(Json {

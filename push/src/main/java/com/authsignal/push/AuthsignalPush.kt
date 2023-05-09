@@ -4,8 +4,8 @@ import android.os.Build
 import com.authsignal.push.models.PushCredential
 import kotlin.math.floor
 
-class AuthsignalPush(baseURL: String) {
-  private val api = PushAPI(baseURL)
+class AuthsignalPush(clientID: String, baseURL: String) {
+  private val api = PushAPI(clientID, baseURL)
 
   suspend fun getCredential(): PushCredential? {
     val publicKey = KeyManager.getPublicKey() ?: return null
