@@ -1,23 +1,13 @@
-package com.authsignal.device
+package com.authsignal.push
 
 import android.os.Build
-import com.authsignal.device.models.Credential
+import com.authsignal.push.models.PushCredential
 import kotlin.math.floor
 
-fun Authsignal(region: AuthsignalRegion = AuthsignalRegion.US): Authsignal {
-  val baseURL = when(region) {
-    AuthsignalRegion.US -> "https://challenge.authsignal.com/v1"
-    AuthsignalRegion.AU -> "https://au-challenge.authsignal.com/v1"
-    AuthsignalRegion.EU -> "https://eu-challenge.authsignal.com/v1"
-  }
+class AuthsignalPush(clientID: String, baseURL: String) {
+  private val api = PushAPI(clientID, baseURL)
 
-  return Authsignal(baseURL)
-}
-
-class Authsignal(baseURL: String) {
-  private val api = ChallengeAPI(baseURL)
-
-  suspend fun getCredential(): Credential? {
+  suspend fun getCredential(): PushCredential? {
     val publicKey = KeyManager.getPublicKey() ?: return null
 
     return api.getCredential(publicKey)

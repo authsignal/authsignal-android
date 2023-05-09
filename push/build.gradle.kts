@@ -10,7 +10,7 @@ plugins {
 }
 
 android {
-  namespace = "com.authsignal.device"
+  namespace = "com.authsignal.push"
 
   compileSdk = 33
 
@@ -48,7 +48,7 @@ publishing {
       artifactId = pomArtifactId
       version = versionName
 
-      artifact("$buildDir/outputs/aar/device-release.aar")
+      artifact("$buildDir/outputs/aar/push-release.aar")
 
       pom.withXml {
         asNode().apply {
