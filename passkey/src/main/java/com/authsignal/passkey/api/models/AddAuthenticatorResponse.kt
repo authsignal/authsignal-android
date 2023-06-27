@@ -6,5 +6,5 @@ import kotlinx.serialization.Serializable
 data class AddAuthenticatorResponse(
   val isVerified: Boolean,
   val accessToken: String? = null,
-  val userAuthenticatorId: String? = null
+  val userAuthenticatorId: String? = null,
 )
