@@ -116,7 +116,8 @@ class PushAPI(tenantID: String, private val baseURL: String) {
       challengeId,
       signature,
       approved,
-      verificationCode)
+      verificationCode,
+    )
 
     val response = client.post(url) {
       contentType(ContentType.Application.Json)

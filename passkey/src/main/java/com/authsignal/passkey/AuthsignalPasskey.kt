@@ -20,8 +20,8 @@ class AuthsignalPasskey(
     val options = optsResponse.options.copy(
       authenticatorSelection = optsResponse.options.authenticatorSelection.copy(
         requireResidentKey = false,
-        userVerification = "required"
-      )
+        userVerification = "required",
+      ),
     )
 
     val optionsJson = Json.encodeToString(options)
@@ -31,7 +31,7 @@ class AuthsignalPasskey(
     val addAuthenticatorResponse = api.addAuthenticator(
       token,
       optsResponse.challengeId,
-      credential
+      credential,
     )
 
     return addAuthenticatorResponse?.accessToken
@@ -47,7 +47,7 @@ class AuthsignalPasskey(
     val verifyResponse = api.verify(
       token,
       optsResponse.challengeId,
-      credential
+      credential,
     )
 
     return verifyResponse?.accessToken
