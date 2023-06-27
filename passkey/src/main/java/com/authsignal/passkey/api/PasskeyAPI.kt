@@ -1,6 +1,5 @@
 package com.authsignal.passkey.api
 
-import android.util.Base64
 import com.authsignal.passkey.api.models.*
 import com.authsignal.passkey.models.*
 import io.ktor.client.*
@@ -77,11 +76,5 @@ class PasskeyAPI(tenantID: String, private val baseURL: String) {
     } else {
       return null
     }
-  }
-}
-
-object Encoder {
-  fun toBase64String(input: ByteArray): String {
-    return String(Base64.encode(input, Base64.NO_WRAP))
   }
 }

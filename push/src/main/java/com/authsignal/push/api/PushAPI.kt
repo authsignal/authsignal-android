@@ -1,5 +1,7 @@
-package com.authsignal.push
+package com.authsignal.push.api
 
+import com.authsignal.push.Encoder
+import com.authsignal.push.api.models.*
 import com.authsignal.push.models.PushCredential
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -8,7 +10,6 @@ import io.ktor.client.request.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
 class PushAPI(tenantID: String, private val baseURL: String) {
@@ -129,32 +130,3 @@ class PushAPI(tenantID: String, private val baseURL: String) {
     return response.status == HttpStatusCode.OK
   }
 }
-
-@Serializable
-data class AddCredentialRequest(
-  val publicKey: String,
-  val deviceName: String,
-  val devicePlatform: String,
-)
-
-@Serializable
-data class ChallengeResponse(val challengeId: String? = null)
-
-@Serializable
-data class CredentialResponse(
-  val userAuthenticatorId: String,
-  val verifiedAt: String,
-  val lastVerifiedAt: String? = null)
-
-@Serializable
-data class RemoveCredentialRequest(
-  val publicKey: String,
-  val signature: String)
-
-@Serializable
-data class UpdateChallengeRequest(
-  val publicKey: String,
-  val challengeId: String,
-  val signature: String,
-  val approved: Boolean,
-  val verificationCode: String?)
