@@ -11,7 +11,7 @@ class AuthsignalPasskey(
   baseURL: String,
   context: Context,
   activity: Activity) {
-  private val api = PasskeyAPI(tenantID, baseURL)
+  val api = PasskeyAPI(tenantID, baseURL)
   private val manager = PasskeyManager(context, activity)
 
   suspend fun signUp(token: String, userName: String): String? {
