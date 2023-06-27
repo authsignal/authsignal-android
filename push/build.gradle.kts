@@ -52,8 +52,8 @@ publishing {
 
       pom.withXml {
         asNode().apply {
-          appendNode("name", "authsignal-android")
-          appendNode("description", "The official Authsignal SDK for Android.")
+          appendNode("name", "authsignal-push-android")
+          appendNode("description", "The official Authsignal Push SDK for Android.")
           appendNode("url", "https://github.com/authsignal/authsignal-android")
           appendNode("licenses").apply {
             appendNode("license").apply {
