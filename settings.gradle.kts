@@ -6,4 +6,5 @@ pluginManagement {
   }
 }
 rootProject.name = "Authsignal"
+include(":passkey")
 include(":push")

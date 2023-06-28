@@ -10,7 +10,7 @@ plugins {
 }
 
 android {
-  namespace = "com.authsignal.push"
+  namespace = "com.authsignal.passkey"
 
   compileSdk = 33
 
@@ -48,12 +48,12 @@ publishing {
       artifactId = pomArtifactId
       version = versionName
 
-      artifact("$buildDir/outputs/aar/push-release.aar")
+      artifact("$buildDir/outputs/aar/passkey-release.aar")
 
       pom.withXml {
         asNode().apply {
-          appendNode("name", "authsignal-push-android")
-          appendNode("description", "The official Authsignal Push SDK for Android.")
+          appendNode("name", "authsignal-passkey-android")
+          appendNode("description", "The official Authsignal Passkey SDK for Android.")
           appendNode("url", "https://github.com/authsignal/authsignal-android")
           appendNode("licenses").apply {
             appendNode("license").apply {
@@ -107,4 +107,6 @@ dependencies {
   implementation("io.ktor:ktor-client-core:$ktorVersion")
   implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
   implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
+  implementation("androidx.credentials:credentials:1.0.0-alpha08")
+  implementation("androidx.credentials:credentials-play-services-auth:1.0.0-alpha08")
 }
