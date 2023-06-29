@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Context
 import com.authsignal.passkey.api.*
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.future.future
 import kotlinx.serialization.encodeToString

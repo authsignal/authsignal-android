@@ -1,5 +1,6 @@
 package com.authsignal.push.api
 
+import android.util.Log
 import com.authsignal.push.Encoder
 import com.authsignal.push.api.models.*
 import com.authsignal.push.models.PushCredential
@@ -8,9 +9,12 @@ import io.ktor.client.call.*
 import io.ktor.client.engine.android.*
 import io.ktor.client.request.*
 import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
+
+private const val TAG = "authsignal"
 
 class PushAPI(tenantID: String, private val baseURL: String) {
   private val client = HttpClient(Android) {
@@ -67,7 +71,13 @@ class PushAPI(tenantID: String, private val baseURL: String) {
       }
     }
 
-    return response.status == HttpStatusCode.OK
+    val success = response.status == HttpStatusCode.OK
+
+    if (!success) {
+      Log.e(TAG, "Add credential request error: ${response.bodyAsText()}")
+    }
+
+    return success
   }
 
   suspend fun removeCredential(publicKey: String, signature: String): Boolean {
@@ -83,7 +93,13 @@ class PushAPI(tenantID: String, private val baseURL: String) {
       }
     }
 
-    return response.status == HttpStatusCode.OK
+    val success = response.status == HttpStatusCode.OK
+
+    if (!success) {
+      Log.e(TAG, "Remove credential request error: ${response.bodyAsText()}")
+    }
+
+    return success
   }
 
   suspend fun getChallenge(publicKey: String): String? {
@@ -128,6 +144,12 @@ class PushAPI(tenantID: String, private val baseURL: String) {
       }
     }
 
-    return response.status == HttpStatusCode.OK
+    val success = response.status == HttpStatusCode.OK
+
+    if (!success) {
+      Log.e(TAG, "Update challenge request error: ${response.bodyAsText()}")
+    }
+
+    return success
   }
 }
