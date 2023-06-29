@@ -3,8 +3,13 @@ package com.authsignal.passkey
 import android.app.Activity
 import android.content.Context
 import com.authsignal.passkey.api.*
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.future.future
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.util.concurrent.CompletableFuture
 
 class AuthsignalPasskey(
   tenantID: String,
@@ -52,4 +57,12 @@ class AuthsignalPasskey(
 
     return verifyResponse?.accessToken
   }
+
+  @OptIn(DelicateCoroutinesApi::class)
+  fun signUpAsync(token: String, userName: String): CompletableFuture<String?> =
+    GlobalScope.future { signUp(token, userName) }
+
+  @OptIn(DelicateCoroutinesApi::class)
+  fun signInAsync(token: String): CompletableFuture<String?> =
+    GlobalScope.future { signIn(token) }
 }
