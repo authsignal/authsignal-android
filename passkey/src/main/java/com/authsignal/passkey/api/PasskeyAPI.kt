@@ -1,5 +1,6 @@
 package com.authsignal.passkey.api
 
+import android.util.Log
 import com.authsignal.passkey.api.models.*
 import com.authsignal.passkey.models.*
 import io.ktor.client.*
@@ -7,9 +8,12 @@ import io.ktor.client.call.*
 import io.ktor.client.engine.android.*
 import io.ktor.client.request.*
 import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
+
+private const val TAG = "authsignal"
 
 class PasskeyAPI(tenantID: String, private val baseURL: String) {
   private val client = HttpClient(Android) {
@@ -74,6 +78,8 @@ class PasskeyAPI(tenantID: String, private val baseURL: String) {
     return if (response.status == HttpStatusCode.OK) {
       response.body<TResponse>()
     } else {
+      Log.e(TAG, "Passkey request error: ${response.bodyAsText()}")
+
       return null
     }
   }
