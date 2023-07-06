@@ -25,7 +25,10 @@ class PasskeyAPI(tenantID: String, private val baseURL: String) {
     }
   }
 
-  suspend fun registrationOptions(token: String, userName: String): RegistrationOptsResponse? {
+  suspend fun registrationOptions(
+    token: String,
+    userName: String,
+  ): AuthsignalResponse<RegistrationOptsResponse> {
     val url = "$baseURL/user-authenticators/passkey/registration-options"
     val body = RegistrationOptsRequest(userName)
 
@@ -36,14 +39,16 @@ class PasskeyAPI(tenantID: String, private val baseURL: String) {
     token: String,
     challengeID: String,
     credential: PasskeyRegistrationCredential,
-  ): AddAuthenticatorResponse? {
+  ): AuthsignalResponse<AddAuthenticatorResponse> {
     val url = "$baseURL/user-authenticators/passkey"
     val body = AddAuthenticatorRequest(challengeID, credential)
 
     return postRequest(url, body, token)
   }
 
-  suspend fun authenticationOptions(token: String): AuthenticationOptsResponse? {
+  suspend fun authenticationOptions(
+    token: String,
+  ): AuthsignalResponse<AuthenticationOptsResponse> {
     val url = "$baseURL/user-authenticators/passkey/authentication-options"
     val body = AuthenticationOptsRequest()
 
@@ -54,7 +59,7 @@ class PasskeyAPI(tenantID: String, private val baseURL: String) {
     token: String,
     challengeID: String,
     credential: PasskeyAuthenticationCredential,
-  ): VerifyResponse? {
+  ): AuthsignalResponse<VerifyResponse> {
     val url = "$baseURL/verify/passkey"
     val body = VerifyRequest(challengeID, credential)
 
@@ -65,7 +70,7 @@ class PasskeyAPI(tenantID: String, private val baseURL: String) {
     url: String,
     body: TRequest,
     token: String,
-  ): TResponse? {
+  ): AuthsignalResponse<TResponse> {
     val response = client.post(url) {
       contentType(ContentType.Application.Json)
       setBody(body)
@@ -76,11 +81,12 @@ class PasskeyAPI(tenantID: String, private val baseURL: String) {
     }
 
     return if (response.status == HttpStatusCode.OK) {
-      response.body<TResponse>()
+      val data = response.body<TResponse>()
+      AuthsignalResponse(data = data)
     } else {
-      Log.e(TAG, "Passkey request error: ${response.bodyAsText()}")
-
-      return null
+      val error = response.bodyAsText()
+      Log.e(TAG, "Passkey request error: $error")
+      AuthsignalResponse(error = error)
     }
   }
 }

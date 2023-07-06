@@ -3,6 +3,7 @@ package com.authsignal.push.api
 import android.util.Log
 import com.authsignal.push.Encoder
 import com.authsignal.push.api.models.*
+import com.authsignal.push.models.AuthsignalResponse
 import com.authsignal.push.models.PushCredential
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -28,7 +29,7 @@ class PushAPI(tenantID: String, private val baseURL: String) {
 
   private val basicAuth = "Basic ${Encoder.toBase64String("$tenantID:".toByteArray())}"
 
-  suspend fun getCredential(publicKey: String): PushCredential? {
+  suspend fun getCredential(publicKey: String): AuthsignalResponse<PushCredential> {
     val encodedKey = Encoder.toBase64String(publicKey.toByteArray())
     val url = "$baseURL/user-authenticators/push?publicKey=$encodedKey"
 
@@ -41,20 +42,24 @@ class PushAPI(tenantID: String, private val baseURL: String) {
     return if (response.status == HttpStatusCode.OK) {
       val credentialResponse = response.body<CredentialResponse>()
 
-      PushCredential(
+      val data = PushCredential(
         credentialResponse.userAuthenticatorId,
         credentialResponse.verifiedAt,
         credentialResponse.lastVerifiedAt,
       )
+
+      AuthsignalResponse(data = data)
     } else {
-      null
+      val error = response.bodyAsText()
+
+      AuthsignalResponse(error = error)
     }
   }
 
   suspend fun addCredential(
     token: String,
     publicKey: String,
-    deviceName: String = ""): Boolean {
+    deviceName: String = ""): AuthsignalResponse<Boolean> {
     val url = "$baseURL/user-authenticators/push"
     val body = AddCredentialRequest(
       publicKey,
@@ -73,14 +78,21 @@ class PushAPI(tenantID: String, private val baseURL: String) {
 
     val success = response.status == HttpStatusCode.OK
 
-    if (!success) {
-      Log.e(TAG, "Add credential request error: ${response.bodyAsText()}")
-    }
+    return if (success) {
+      AuthsignalResponse(data = true)
+    } else {
+      val error = response.bodyAsText()
 
-    return success
+      Log.e(TAG, "Add credential request error: $error")
+
+      AuthsignalResponse(error = error)
+    }
   }
 
-  suspend fun removeCredential(publicKey: String, signature: String): Boolean {
+  suspend fun removeCredential(
+    publicKey: String,
+    signature: String,
+  ): AuthsignalResponse<Boolean> {
     val url = "$baseURL/user-authenticators/push/remove"
     val body = RemoveCredentialRequest(publicKey, signature)
 
@@ -95,14 +107,18 @@ class PushAPI(tenantID: String, private val baseURL: String) {
 
     val success = response.status == HttpStatusCode.OK
 
-    if (!success) {
-      Log.e(TAG, "Remove credential request error: ${response.bodyAsText()}")
-    }
+    return if (success) {
+      AuthsignalResponse(data = true)
+    } else {
+      val error = response.bodyAsText()
 
-    return success
+      Log.e(TAG, "Remove credential request error: $error")
+
+      AuthsignalResponse(error = error)
+    }
   }
 
-  suspend fun getChallenge(publicKey: String): String? {
+  suspend fun getChallenge(publicKey: String): AuthsignalResponse<String> {
     val encodedKey = Encoder.toBase64String(publicKey.toByteArray())
     val url = "$baseURL/user-authenticators/push/challenge?publicKey=$encodedKey"
 
@@ -113,9 +129,13 @@ class PushAPI(tenantID: String, private val baseURL: String) {
     }
 
     return if (response.status == HttpStatusCode.OK) {
-      response.body<ChallengeResponse>().challengeId
+      val data = response.body<ChallengeResponse>().challengeId
+
+      AuthsignalResponse(data = data)
     } else {
-      null
+      val error = response.bodyAsText()
+
+      AuthsignalResponse(error = error)
     }
   }
 
@@ -125,7 +145,7 @@ class PushAPI(tenantID: String, private val baseURL: String) {
     signature: String,
     approved: Boolean,
     verificationCode: String?
-  ): Boolean {
+  ): AuthsignalResponse<Boolean> {
     val url = "$baseURL/user-authenticators/push/challenge"
     val body = UpdateChallengeRequest(
       publicKey,
@@ -146,10 +166,14 @@ class PushAPI(tenantID: String, private val baseURL: String) {
 
     val success = response.status == HttpStatusCode.OK
 
-    if (!success) {
-      Log.e(TAG, "Update challenge request error: ${response.bodyAsText()}")
-    }
+    return if (success) {
+      AuthsignalResponse(data = true)
+    } else {
+      val error = response.bodyAsText()
 
-    return success
+      Log.e(TAG, "Update credential request error: $error")
+
+      AuthsignalResponse(error = error)
+    }
   }
 }

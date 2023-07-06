@@ -2,6 +2,7 @@ package com.authsignal.push
 
 import android.os.Build
 import com.authsignal.push.api.PushAPI
+import com.authsignal.push.models.AuthsignalResponse
 import com.authsignal.push.models.PushCredential
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -12,40 +13,48 @@ import kotlin.math.floor
 class AuthsignalPush(tenantID: String, baseURL: String) {
   private val api = PushAPI(tenantID, baseURL)
 
-  suspend fun getCredential(): PushCredential? {
-    val publicKey = KeyManager.getPublicKey() ?: return null
+  suspend fun getCredential(): AuthsignalResponse<PushCredential> {
+    val publicKey = KeyManager.getPublicKey()
+      ?: return AuthsignalResponse(error = "Public key not found")
 
     return api.getCredential(publicKey)
   }
 
-  suspend fun addCredential(token: String, deviceName: String? = null): Boolean {
-    val publicKey = KeyManager.getOrCreatePublicKey() ?: return false
+  suspend fun addCredential(
+    token: String,
+    deviceName: String? = null,
+  ): AuthsignalResponse<Boolean> {
+    val publicKey = KeyManager.getOrCreatePublicKey()
+      ?: return AuthsignalResponse(error = "Error registering key pair")
 
     val device = deviceName ?: getDeviceName()
 
     return api.addCredential(token, publicKey, device)
   }
 
-  suspend fun removeCredential(): Boolean {
-    val key = KeyManager.getKey() ?: return false
+  suspend fun removeCredential(): AuthsignalResponse<Boolean> {
+    val key = KeyManager.getKey()
+      ?: return AuthsignalResponse(error = "Error retrieving key pair")
 
     val publicKey = KeyManager.derivePublicKey(key)
 
     val message = getTimeBasedDataToSign()
 
-    val signature = Signer.sign(message, key) ?: return false
+    val signature = Signer.sign(message, key)
+      ?: return AuthsignalResponse(error = "Error generating signature")
 
-    val success = api.removeCredential(publicKey, signature)
+    val removeCredentialResponse = api.removeCredential(publicKey, signature)
 
-    if (success) {
+    removeCredentialResponse.data.let {
       KeyManager.deleteKey()
     }
 
-    return success
+    return removeCredentialResponse
   }
 
-  suspend fun getChallenge(): String? {
-    val publicKey = KeyManager.getPublicKey() ?: return null
+  suspend fun getChallenge(): AuthsignalResponse<String> {
+    val publicKey = KeyManager.getPublicKey()
+      ?: return AuthsignalResponse(error = "Public key not found")
 
     return api.getChallenge(publicKey)
   }
@@ -54,12 +63,14 @@ class AuthsignalPush(tenantID: String, baseURL: String) {
     challengeId: String,
     approved: Boolean,
     verificationCode: String? = null
-  ): Boolean {
-    val key = KeyManager.getKey() ?: return false
+  ): AuthsignalResponse<Boolean> {
+    val key = KeyManager.getKey()
+      ?: return AuthsignalResponse(error = "Error retrieving key pair")
 
     val publicKey = KeyManager.derivePublicKey(key)
 
-    val signature = Signer.sign(challengeId, key) ?: return false
+    val signature = Signer.sign(challengeId, key)
+      ?: return AuthsignalResponse(error = "Error generating signature")
 
     return api.updateChallenge(challengeId, publicKey, signature, approved, verificationCode)
   }
@@ -82,19 +93,22 @@ class AuthsignalPush(tenantID: String, baseURL: String) {
   }
 
   @OptIn(DelicateCoroutinesApi::class)
-  fun getCredentialAsync(): CompletableFuture<PushCredential?> =
+  fun getCredentialAsync(): CompletableFuture<AuthsignalResponse<PushCredential>> =
     GlobalScope.future { getCredential() }
 
   @OptIn(DelicateCoroutinesApi::class)
-  fun addCredentialAsync(token: String, deviceName: String? = null): CompletableFuture<Boolean> =
+  fun addCredentialAsync(
+    token: String,
+    deviceName: String? = null,
+  ): CompletableFuture<AuthsignalResponse<Boolean>> =
     GlobalScope.future { addCredential(token, deviceName) }
 
   @OptIn(DelicateCoroutinesApi::class)
-  fun removeCredentialAsync(): CompletableFuture<Boolean> =
+  fun removeCredentialAsync(): CompletableFuture<AuthsignalResponse<Boolean>> =
     GlobalScope.future { removeCredential() }
 
   @OptIn(DelicateCoroutinesApi::class)
-  fun getChallengeAsync(): CompletableFuture<String?> =
+  fun getChallengeAsync(): CompletableFuture<AuthsignalResponse<String>> =
     GlobalScope.future { getChallenge() }
 
   @OptIn(DelicateCoroutinesApi::class)
@@ -102,6 +116,6 @@ class AuthsignalPush(tenantID: String, baseURL: String) {
     challengeId: String,
     approved: Boolean,
     verificationCode: String? = null,
-  ): CompletableFuture<Boolean> =
+  ): CompletableFuture<AuthsignalResponse<Boolean>> =
     GlobalScope.future { updateChallenge(challengeId, approved, verificationCode) }
 }
