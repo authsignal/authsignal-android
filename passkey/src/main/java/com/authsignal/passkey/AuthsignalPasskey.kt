@@ -3,6 +3,7 @@ package com.authsignal.passkey
 import android.app.Activity
 import android.content.Context
 import com.authsignal.passkey.api.*
+import com.authsignal.passkey.models.AuthsignalResponse
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.future.future
@@ -18,11 +19,13 @@ class AuthsignalPasskey(
   val api = PasskeyAPI(tenantID, baseURL)
   private val manager = PasskeyManager(context, activity)
 
-  suspend fun signUp(token: String, userName: String): String? {
-    val optsResponse = api.registrationOptions(token, userName) ?: return null
+  suspend fun signUp(token: String, userName: String): AuthsignalResponse<String> {
+    val optsResponse = api.registrationOptions(token, userName)
 
-    val options = optsResponse.options.copy(
-      authenticatorSelection = optsResponse.options.authenticatorSelection.copy(
+    val optsData = optsResponse.data ?: return AuthsignalResponse(error = optsResponse.error)
+
+    val options = optsData.options.copy(
+      authenticatorSelection = optsData.options.authenticatorSelection.copy(
         requireResidentKey = false,
         userVerification = "required",
       ),
@@ -30,38 +33,50 @@ class AuthsignalPasskey(
 
     val optionsJson = Json.encodeToString(options)
 
-    val credential = manager.register(optionsJson) ?: return null
+    val registerResponse = manager.register(optionsJson)
+
+    val credential = registerResponse.data ?: return AuthsignalResponse(error = registerResponse.error)
 
     val addAuthenticatorResponse = api.addAuthenticator(
       token,
-      optsResponse.challengeId,
+      optsData.challengeId,
       credential,
     )
 
-    return addAuthenticatorResponse?.accessToken
+    val authenticatorData = addAuthenticatorResponse.data
+      ?: return AuthsignalResponse(error = addAuthenticatorResponse.error)
+
+    return AuthsignalResponse(data = authenticatorData.accessToken)
   }
 
-  suspend fun signIn(token: String): String? {
-    val optsResponse = api.authenticationOptions(token) ?: return null
+  suspend fun signIn(token: String): AuthsignalResponse<String> {
+    val optsResponse = api.authenticationOptions(token)
 
-    val optionsJson = Json.encodeToString(optsResponse.options)
+    val optsData = optsResponse.data ?: return AuthsignalResponse(error = optsResponse.error)
 
-    val credential = manager.auth(optionsJson) ?: return null
+    val optionsJson = Json.encodeToString(optsData.options)
+
+    val authResponse = manager.auth(optionsJson)
+
+    val credential =  authResponse.data ?: return AuthsignalResponse(error = authResponse.error)
 
     val verifyResponse = api.verify(
       token,
-      optsResponse.challengeId,
+      optsData.challengeId,
       credential,
     )
 
-    return verifyResponse?.accessToken
+    val verifyData = verifyResponse.data
+      ?: return AuthsignalResponse(error = verifyResponse.error)
+
+    return AuthsignalResponse(data = verifyData.accessToken)
   }
 
   @OptIn(DelicateCoroutinesApi::class)
-  fun signUpAsync(token: String, userName: String): CompletableFuture<String?> =
+  fun signUpAsync(token: String, userName: String): CompletableFuture<AuthsignalResponse<String>> =
     GlobalScope.future { signUp(token, userName) }
 
   @OptIn(DelicateCoroutinesApi::class)
-  fun signInAsync(token: String): CompletableFuture<String?> =
+  fun signInAsync(token: String): CompletableFuture<AuthsignalResponse<String>> =
     GlobalScope.future { signIn(token) }
 }

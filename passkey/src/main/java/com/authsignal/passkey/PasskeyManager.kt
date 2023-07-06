@@ -15,7 +15,7 @@ private const val TAG = "authsignal"
 class PasskeyManager(context: Context, private val activity: Activity) {
   private val credentialManager = CredentialManager.create(context)
 
-  suspend fun register(requestJson: String): PasskeyRegistrationCredential? {
+  suspend fun register(requestJson: String): AuthsignalResponse<PasskeyRegistrationCredential> {
     val createPublicKeyCredentialRequest = CreatePublicKeyCredentialRequest(
       requestJson = requestJson,
       preferImmediatelyAvailableCredentials = false,
@@ -29,15 +29,19 @@ class PasskeyManager(context: Context, private val activity: Activity) {
 
       val responseJson = credentialResponse.registrationResponseJson
 
-      Json.decodeFromString<PasskeyRegistrationCredential>(responseJson)
-    } catch (e : CreateCredentialException){
-      handleCreateCredentialFailure(e)
+      val data = Json.decodeFromString<PasskeyRegistrationCredential>(responseJson)
 
-      null
+      AuthsignalResponse(data = data)
+    } catch (e : CreateCredentialException){
+      val error = mapCreateCredentialFailure(e)
+
+      Log.e(TAG, "createCredential failed: $error")
+
+      AuthsignalResponse(error = error)
     }
   }
 
-  suspend fun auth(requestJson: String): PasskeyAuthenticationCredential? {
+  suspend fun auth(requestJson: String): AuthsignalResponse<PasskeyAuthenticationCredential> {
     val getPublicKeyCredentialOption = GetPublicKeyCredentialOption(
       requestJson,
       null,
@@ -58,24 +62,23 @@ class PasskeyManager(context: Context, private val activity: Activity) {
 
       val responseJson = publicKeyCredential.authenticationResponseJson
 
-      Json.decodeFromString<PasskeyAuthenticationCredential>(responseJson)
-    } catch (e : GetCredentialException){
-      Log.e(TAG, "getCredential failed with exception: " + e.message.toString())
+      val data = Json.decodeFromString<PasskeyAuthenticationCredential>(responseJson)
 
-      null
+      AuthsignalResponse(data = data)
+    } catch (e : GetCredentialException){
+      val error = e.message.toString()
+
+      Log.e(TAG, "getCredential failed: $error")
+
+      AuthsignalResponse(error = error)
     }
   }
 
-  private fun handleCreateCredentialFailure(e: CreateCredentialException) {
-    when (e) {
-      is CreatePublicKeyCredentialDomException -> {
-        Log.w(TAG, "Error ${e.domError}")
-        Log.w(TAG, "Error message ${e.message}")
-      }
-      is CreateCredentialCancellationException -> {
-        Log.i(TAG, "Credential registration was cancelled by the user.")
-      }
-      else -> Log.w(TAG, "Unexpected exception type ${e::class.java.name}")
+  private fun mapCreateCredentialFailure(e: CreateCredentialException): String {
+    return when (e) {
+      is CreateCredentialCancellationException -> "user_cancelled_credential"
+      is CreatePublicKeyCredentialDomException -> "dom_exception: ${e.message}"
+      else -> "unexpected_exception ${e::class.java.name}"
     }
   }
 }
