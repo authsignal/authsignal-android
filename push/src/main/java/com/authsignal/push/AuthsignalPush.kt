@@ -15,7 +15,7 @@ class AuthsignalPush(tenantID: String, baseURL: String) {
 
   suspend fun getCredential(): AuthsignalResponse<PushCredential> {
     val publicKey = KeyManager.getPublicKey()
-      ?: return AuthsignalResponse(error = "Error retrieving public key")
+      ?: return AuthsignalResponse(error = "Public key not found")
 
     return api.getCredential(publicKey)
   }
@@ -54,7 +54,7 @@ class AuthsignalPush(tenantID: String, baseURL: String) {
 
   suspend fun getChallenge(): AuthsignalResponse<String> {
     val publicKey = KeyManager.getPublicKey()
-      ?: return AuthsignalResponse(error = "Error retrieving public key")
+      ?: return AuthsignalResponse(error = "Public key not found")
 
     return api.getChallenge(publicKey)
   }
