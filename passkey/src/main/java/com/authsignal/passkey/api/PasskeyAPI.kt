@@ -29,7 +29,7 @@ class PasskeyAPI(tenantID: String, private val baseURL: String) {
     token: String,
     userName: String,
   ): AuthsignalResponse<RegistrationOptsResponse> {
-    val url = "$baseURL/v1/client/user-authenticators/passkey/registration-options"
+    val url = "$baseURL/client/user-authenticators/passkey/registration-options"
     val body = RegistrationOptsRequest(userName)
 
     return postRequest(url, body, token)
@@ -40,7 +40,7 @@ class PasskeyAPI(tenantID: String, private val baseURL: String) {
     challengeID: String,
     credential: PasskeyRegistrationCredential,
   ): AuthsignalResponse<AddAuthenticatorResponse> {
-    val url = "$baseURL/v1/client/user-authenticators/passkey"
+    val url = "$baseURL/client/user-authenticators/passkey"
     val body = AddAuthenticatorRequest(challengeID, credential)
 
     return postRequest(url, body, token)
@@ -49,7 +49,7 @@ class PasskeyAPI(tenantID: String, private val baseURL: String) {
   suspend fun authenticationOptions(
     token: String,
   ): AuthsignalResponse<AuthenticationOptsResponse> {
-    val url = "$baseURL/v1/client/user-authenticators/passkey/authentication-options"
+    val url = "$baseURL/client/user-authenticators/passkey/authentication-options"
     val body = AuthenticationOptsRequest()
 
     return postRequest(url, body, token)
@@ -60,7 +60,7 @@ class PasskeyAPI(tenantID: String, private val baseURL: String) {
     challengeID: String,
     credential: PasskeyAuthenticationCredential,
   ): AuthsignalResponse<VerifyResponse> {
-    val url = "$baseURL/v1/client/verify/passkey"
+    val url = "$baseURL/client/verify/passkey"
     val body = VerifyRequest(challengeID, credential)
 
     return postRequest(url, body, token)
