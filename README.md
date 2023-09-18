@@ -53,11 +53,11 @@ You can find your tenant ID in the [Authsignal Portal](https://portal.authsignal
 
 You must specify the correct base URL for your tenant's region.
 
-| Region      | Base URL                               |
-| ----------- | -------------------------------------- |
-| US (Oregon) | https://challenge.authsignal.com/v1    |
-| AU (Sydney) | https://au-challenge.authsignal.com/v1 |
-| EU (Dublin) | https://eu-challenge.authsignal.com/v1 |
+| Region      | Base URL                      |
+| ----------- | ----------------------------- |
+| US (Oregon) | https://api.authsignal.com    |
+| AU (Sydney) | https://au.api.authsignal.com |
+| EU (Dublin) | https://eu.api.authsignal.com |
 
 ## Usage
 
