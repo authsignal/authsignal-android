@@ -20,13 +20,13 @@ Add the following to your app's build.gradle file:
 #### Passkeys
 
 ```
-implementation 'com.authsignal:authsignal-passkey-android:0.0.5'
+implementation 'com.authsignal:authsignal-passkey-android:0.1.1'
 ```
 
 #### Push auth
 
 ```
-implementation 'com.authsignal:authsignal-push-android:0.1.12'
+implementation 'com.authsignal:authsignal-push-android:0.2.1'
 ```
 
 ## Initialization
@@ -53,11 +53,11 @@ You can find your tenant ID in the [Authsignal Portal](https://portal.authsignal
 
 You must specify the correct base URL for your tenant's region.
 
-| Region      | Base URL                               |
-| ----------- | -------------------------------------- |
-| US (Oregon) | https://challenge.authsignal.com/v1    |
-| AU (Sydney) | https://au-challenge.authsignal.com/v1 |
-| EU (Dublin) | https://eu-challenge.authsignal.com/v1 |
+| Region      | Base URL                         |
+| ----------- | -------------------------------- |
+| US (Oregon) | https://api.authsignal.com/v1    |
+| AU (Sydney) | https://au.api.authsignal.com/v1 |
+| EU (Dublin) | https://eu.api.authsignal.com/v1 |
 
 ## Usage
 

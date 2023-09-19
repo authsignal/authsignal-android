@@ -31,7 +31,7 @@ class PushAPI(tenantID: String, private val baseURL: String) {
 
   suspend fun getCredential(publicKey: String): AuthsignalResponse<PushCredential> {
     val encodedKey = Encoder.toBase64String(publicKey.toByteArray())
-    val url = "$baseURL/user-authenticators/push?publicKey=$encodedKey"
+    val url = "$baseURL/client/user-authenticators/push?publicKey=$encodedKey"
 
     val response = client.get(url) {
       headers {
@@ -60,7 +60,7 @@ class PushAPI(tenantID: String, private val baseURL: String) {
     token: String,
     publicKey: String,
     deviceName: String = ""): AuthsignalResponse<Boolean> {
-    val url = "$baseURL/user-authenticators/push"
+    val url = "$baseURL/client/user-authenticators/push"
     val body = AddCredentialRequest(
       publicKey,
       deviceName,
@@ -93,7 +93,7 @@ class PushAPI(tenantID: String, private val baseURL: String) {
     publicKey: String,
     signature: String,
   ): AuthsignalResponse<Boolean> {
-    val url = "$baseURL/user-authenticators/push/remove"
+    val url = "$baseURL/client/user-authenticators/push/remove"
     val body = RemoveCredentialRequest(publicKey, signature)
 
     val response = client.post(url) {
@@ -120,7 +120,7 @@ class PushAPI(tenantID: String, private val baseURL: String) {
 
   suspend fun getChallenge(publicKey: String): AuthsignalResponse<String> {
     val encodedKey = Encoder.toBase64String(publicKey.toByteArray())
-    val url = "$baseURL/user-authenticators/push/challenge?publicKey=$encodedKey"
+    val url = "$baseURL/client/user-authenticators/push/challenge?publicKey=$encodedKey"
 
     val response = client.get(url) {
       headers {
@@ -146,7 +146,7 @@ class PushAPI(tenantID: String, private val baseURL: String) {
     approved: Boolean,
     verificationCode: String?
   ): AuthsignalResponse<Boolean> {
-    val url = "$baseURL/user-authenticators/push/challenge"
+    val url = "$baseURL/client/user-authenticators/push/challenge"
     val body = UpdateChallengeRequest(
       publicKey,
       challengeId,
