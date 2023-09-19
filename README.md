@@ -20,13 +20,13 @@ Add the following to your app's build.gradle file:
 #### Passkeys
 
 ```
-implementation 'com.authsignal:authsignal-passkey-android:0.0.5'
+implementation 'com.authsignal:authsignal-passkey-android:0.1.1'
 ```
 
 #### Push auth
 
 ```
-implementation 'com.authsignal:authsignal-push-android:0.1.12'
+implementation 'com.authsignal:authsignal-push-android:0.2.1'
 ```
 
 ## Initialization
