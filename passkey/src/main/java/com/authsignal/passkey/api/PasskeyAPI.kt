@@ -61,7 +61,7 @@ class PasskeyAPI(tenantID: String, private val baseURL: String) {
   suspend fun verify(
     challengeID: String,
     credential: PasskeyAuthenticationCredential,
-    token: String?
+    token: String?,
   ): AuthsignalResponse<VerifyResponse> {
     val url = "$baseURL/client/verify/passkey"
     val body = VerifyRequest(challengeID, credential)
