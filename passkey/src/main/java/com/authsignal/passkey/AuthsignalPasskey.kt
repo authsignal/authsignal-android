@@ -49,7 +49,7 @@ class AuthsignalPasskey(
     return AuthsignalResponse(data = authenticatorData.accessToken)
   }
 
-  suspend fun signIn(token: String): AuthsignalResponse<String> {
+  suspend fun signIn(token: String?): AuthsignalResponse<String> {
     val optsResponse = api.authenticationOptions(token)
 
     val optsData = optsResponse.data ?: return AuthsignalResponse(error = optsResponse.error)
@@ -61,9 +61,9 @@ class AuthsignalPasskey(
     val credential =  authResponse.data ?: return AuthsignalResponse(error = authResponse.error)
 
     val verifyResponse = api.verify(
-      token,
       optsData.challengeId,
       credential,
+      token,
     )
 
     val verifyData = verifyResponse.data
@@ -77,6 +77,6 @@ class AuthsignalPasskey(
     GlobalScope.future { signUp(token, userName) }
 
   @OptIn(DelicateCoroutinesApi::class)
-  fun signInAsync(token: String): CompletableFuture<AuthsignalResponse<String>> =
+  fun signInAsync(token: String? = null): CompletableFuture<AuthsignalResponse<String>> =
     GlobalScope.future { signIn(token) }
 }

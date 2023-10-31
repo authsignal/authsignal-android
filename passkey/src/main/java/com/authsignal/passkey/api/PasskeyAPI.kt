@@ -1,6 +1,7 @@
 package com.authsignal.passkey.api
 
 import android.util.Log
+import com.authsignal.passkey.Encoder
 import com.authsignal.passkey.api.models.*
 import com.authsignal.passkey.models.*
 import io.ktor.client.*
@@ -25,6 +26,8 @@ class PasskeyAPI(tenantID: String, private val baseURL: String) {
     }
   }
 
+  private val basicAuth = "Basic ${Encoder.toBase64String("$tenantID:".toByteArray())}"
+
   suspend fun registrationOptions(
     token: String,
     userName: String,
@@ -47,7 +50,7 @@ class PasskeyAPI(tenantID: String, private val baseURL: String) {
   }
 
   suspend fun authenticationOptions(
-    token: String,
+    token: String?,
   ): AuthsignalResponse<AuthenticationOptsResponse> {
     val url = "$baseURL/client/user-authenticators/passkey/authentication-options"
     val body = AuthenticationOptsRequest()
@@ -56,9 +59,9 @@ class PasskeyAPI(tenantID: String, private val baseURL: String) {
   }
 
   suspend fun verify(
-    token: String,
     challengeID: String,
     credential: PasskeyAuthenticationCredential,
+    token: String?
   ): AuthsignalResponse<VerifyResponse> {
     val url = "$baseURL/client/verify/passkey"
     val body = VerifyRequest(challengeID, credential)
@@ -69,14 +72,17 @@ class PasskeyAPI(tenantID: String, private val baseURL: String) {
   private suspend inline fun <reified TRequest, reified TResponse>postRequest(
     url: String,
     body: TRequest,
-    token: String,
+    token: String?,
   ): AuthsignalResponse<TResponse> {
     val response = client.post(url) {
       contentType(ContentType.Application.Json)
       setBody(body)
 
       headers {
-        append(HttpHeaders.Authorization, "Bearer $token")
+        append(
+          HttpHeaders.Authorization,
+          if (token != null) "Bearer $token" else basicAuth,
+        )
       }
     }
 
