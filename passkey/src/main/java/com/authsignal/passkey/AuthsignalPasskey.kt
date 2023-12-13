@@ -49,7 +49,7 @@ class AuthsignalPasskey(
     return AuthsignalResponse(data = authenticatorData.accessToken)
   }
 
-  suspend fun signIn(token: String?): AuthsignalResponse<String> {
+  suspend fun signIn(token: String? = null): AuthsignalResponse<String> {
     val optsResponse = api.authenticationOptions(token)
 
     val optsData = optsResponse.data ?: return AuthsignalResponse(error = optsResponse.error)
