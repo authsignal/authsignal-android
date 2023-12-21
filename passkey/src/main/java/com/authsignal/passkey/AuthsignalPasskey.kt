@@ -74,7 +74,7 @@ class AuthsignalPasskey(
 
   @OptIn(DelicateCoroutinesApi::class)
   fun signUpAsync(token: String, userName: String? = null, displayName: String? = null): CompletableFuture<AuthsignalResponse<String>> =
-    GlobalScope.future { signUp(token, userName) }
+    GlobalScope.future { signUp(token, userName, displayName) }
 
   @OptIn(DelicateCoroutinesApi::class)
   fun signInAsync(token: String? = null): CompletableFuture<AuthsignalResponse<String>> =
