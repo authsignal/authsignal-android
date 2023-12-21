@@ -30,10 +30,11 @@ class PasskeyAPI(tenantID: String, private val baseURL: String) {
 
   suspend fun registrationOptions(
     token: String,
-    userName: String,
+    userName: String? = null,
+    displayName: String? = null,
   ): AuthsignalResponse<RegistrationOptsResponse> {
     val url = "$baseURL/client/user-authenticators/passkey/registration-options"
-    val body = RegistrationOptsRequest(userName)
+    val body = RegistrationOptsRequest(userName, displayName)
 
     return postRequest(url, body, token)
   }
