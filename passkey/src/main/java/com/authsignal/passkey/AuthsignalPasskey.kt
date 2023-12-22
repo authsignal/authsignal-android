@@ -19,8 +19,8 @@ class AuthsignalPasskey(
   val api = PasskeyAPI(tenantID, baseURL)
   private val manager = PasskeyManager(context, activity)
 
-  suspend fun signUp(token: String, userName: String): AuthsignalResponse<String> {
-    val optsResponse = api.registrationOptions(token, userName)
+  suspend fun signUp(token: String, userName: String? = null, displayName: String? = null): AuthsignalResponse<String> {
+    val optsResponse = api.registrationOptions(token, userName, displayName)
 
     val optsData = optsResponse.data ?: return AuthsignalResponse(error = optsResponse.error)
 
@@ -73,8 +73,8 @@ class AuthsignalPasskey(
   }
 
   @OptIn(DelicateCoroutinesApi::class)
-  fun signUpAsync(token: String, userName: String): CompletableFuture<AuthsignalResponse<String>> =
-    GlobalScope.future { signUp(token, userName) }
+  fun signUpAsync(token: String, userName: String? = null, displayName: String? = null): CompletableFuture<AuthsignalResponse<String>> =
+    GlobalScope.future { signUp(token, userName, displayName) }
 
   @OptIn(DelicateCoroutinesApi::class)
   fun signInAsync(token: String? = null): CompletableFuture<AuthsignalResponse<String>> =
