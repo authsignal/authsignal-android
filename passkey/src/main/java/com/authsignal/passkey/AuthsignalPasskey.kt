@@ -18,6 +18,8 @@ class AuthsignalPasskey(
   activity: Activity) {
   val api = PasskeyAPI(tenantID, baseURL)
   private val manager = PasskeyManager(context, activity)
+  private val activity = activity
+  private val passkeyLocalKey = "@as_passkey_credential_id"
 
   suspend fun signUp(token: String, userName: String? = null, displayName: String? = null): AuthsignalResponse<String> {
     val optsResponse = api.registrationOptions(token, userName, displayName)
@@ -46,6 +48,13 @@ class AuthsignalPasskey(
     val authenticatorData = addAuthenticatorResponse.data
       ?: return AuthsignalResponse(error = addAuthenticatorResponse.error)
 
+    if (authenticatorData.isVerified) {
+      with (activity.getPreferences(Context.MODE_PRIVATE).edit()) {
+        putString(passkeyLocalKey, credential.rawId)
+        apply()
+      }
+    }
+
     return AuthsignalResponse(data = authenticatorData.accessToken)
   }
 
@@ -69,7 +78,28 @@ class AuthsignalPasskey(
     val verifyData = verifyResponse.data
       ?: return AuthsignalResponse(error = verifyResponse.error)
 
+    if (verifyData.isVerified) {
+      with (activity.getPreferences(Context.MODE_PRIVATE).edit()) {
+        putString(passkeyLocalKey, credential.rawId)
+        apply()
+      }
+    }
+
     return AuthsignalResponse(data = verifyData.accessToken)
+  }
+
+  suspend fun isAvailableOnDevice(): AuthsignalResponse<Boolean> {
+    val preferences = activity.getPreferences(Context.MODE_PRIVATE)
+    val credentialId = preferences.getString(passkeyLocalKey, null)
+      ?: return AuthsignalResponse(data = false)
+
+    val passkeyAuthenticatorResponse = api.getPasskeyAuthenticator(credentialId)
+
+    return if (passkeyAuthenticatorResponse.error != null) {
+      AuthsignalResponse(data = false, error = passkeyAuthenticatorResponse.error)
+    } else {
+      AuthsignalResponse(data = true)
+    }
   }
 
   @OptIn(DelicateCoroutinesApi::class)
@@ -79,4 +109,8 @@ class AuthsignalPasskey(
   @OptIn(DelicateCoroutinesApi::class)
   fun signInAsync(token: String? = null): CompletableFuture<AuthsignalResponse<String>> =
     GlobalScope.future { signIn(token) }
+
+  @OptIn(DelicateCoroutinesApi::class)
+  fun isAvailableOnDeviceAsync(): CompletableFuture<AuthsignalResponse<Boolean>> =
+    GlobalScope.future { isAvailableOnDevice() }
 }
