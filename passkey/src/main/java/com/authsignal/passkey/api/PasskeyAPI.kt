@@ -70,6 +70,26 @@ class PasskeyAPI(tenantID: String, private val baseURL: String) {
     return postRequest(url, body, token)
   }
 
+  suspend fun getPasskeyAuthenticator(credentialId: String): AuthsignalResponse<PasskeyAuthenticatorResponse> {
+    val url = "$baseURL/client/user-authenticators/passkey?credentialId=$credentialId"
+
+    val response = client.get(url) {
+      headers {
+        append(HttpHeaders.Authorization, basicAuth)
+      }
+    }
+
+    return if (response.status == HttpStatusCode.OK) {
+      val passkeyAuthenticatorResponse = response.body<PasskeyAuthenticatorResponse>()
+
+      AuthsignalResponse(data = passkeyAuthenticatorResponse)
+    } else {
+      val error = response.bodyAsText()
+
+      AuthsignalResponse(error = error)
+    }
+  }
+
   private suspend inline fun <reified TRequest, reified TResponse>postRequest(
     url: String,
     body: TRequest,
