@@ -4,5 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class AuthenticationOptsRequest(
+  val challengeId: String? = null,
   val username: String? = null,
 )

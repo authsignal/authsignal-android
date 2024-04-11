@@ -129,7 +129,7 @@ class PushAPI(tenantID: String, private val baseURL: String) {
     }
 
     return if (response.status == HttpStatusCode.OK) {
-      val data = response.body<ChallengeResponse>().challengeId
+      val data = response.body<PushChallengeResponse>().challengeId
 
       AuthsignalResponse(data = data)
     } else {

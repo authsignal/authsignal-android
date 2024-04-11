@@ -10,7 +10,9 @@ import kotlinx.coroutines.future.future
 import java.util.concurrent.CompletableFuture
 import kotlin.math.floor
 
-class AuthsignalPush(tenantID: String, baseURL: String) {
+class AuthsignalPush(
+  tenantID: String,
+  baseURL: String) {
   private val api = PushAPI(tenantID, baseURL)
 
   suspend fun getCredential(): AuthsignalResponse<PushCredential> {
