@@ -9,6 +9,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.future.future
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.util.UUID
 import java.util.concurrent.CompletableFuture
 
 class AuthsignalPasskey(
@@ -16,10 +17,11 @@ class AuthsignalPasskey(
   baseURL: String,
   context: Context,
   activity: Activity) {
-  val api = PasskeyAPI(tenantID, baseURL)
+  private val api = PasskeyAPI(tenantID, baseURL)
   private val manager = PasskeyManager(context, activity)
   private val activity = activity
   private val passkeyLocalKey = "@as_passkey_credential_id"
+  private val defaultDeviceLocalKey = "@as_device_id"
 
   suspend fun signUp(token: String, userName: String? = null, displayName: String? = null): AuthsignalResponse<String> {
     val optsResponse = api.registrationOptions(token, userName, displayName)
@@ -58,7 +60,13 @@ class AuthsignalPasskey(
     return AuthsignalResponse(data = authenticatorData.accessToken)
   }
 
-  suspend fun signIn(token: String? = null): AuthsignalResponse<String> {
+  suspend fun signIn(action: String? = null, token: String? = null): AuthsignalResponse<String> {
+    val challengeID = action?.let {
+      val challengeResponse = api.challenge(it)
+
+      challengeResponse.data?.challengeId
+    }
+
     val optsResponse = api.authenticationOptions(token)
 
     val optsData = optsResponse.data ?: return AuthsignalResponse(error = optsResponse.error)
@@ -69,10 +77,13 @@ class AuthsignalPasskey(
 
     val credential =  authResponse.data ?: return AuthsignalResponse(error = authResponse.error)
 
+    val deviceID =  getDefaultDeviceID()
+
     val verifyResponse = api.verify(
       optsData.challengeId,
       credential,
       token,
+      deviceID,
     )
 
     val verifyData = verifyResponse.data
@@ -90,10 +101,10 @@ class AuthsignalPasskey(
 
   suspend fun isAvailableOnDevice(): AuthsignalResponse<Boolean> {
     val preferences = activity.getPreferences(Context.MODE_PRIVATE)
-    val credentialId = preferences.getString(passkeyLocalKey, null)
+    val credentialID = preferences.getString(passkeyLocalKey, null)
       ?: return AuthsignalResponse(data = false)
 
-    val passkeyAuthenticatorResponse = api.getPasskeyAuthenticator(credentialId)
+    val passkeyAuthenticatorResponse = api.getPasskeyAuthenticator(credentialID)
 
     return if (passkeyAuthenticatorResponse.error != null) {
       AuthsignalResponse(data = false, error = passkeyAuthenticatorResponse.error)
@@ -102,13 +113,31 @@ class AuthsignalPasskey(
     }
   }
 
+  private fun getDefaultDeviceID(): String {
+    val preferences = activity.getPreferences(Context.MODE_PRIVATE)
+    val defaultDeviceID = preferences.getString(defaultDeviceLocalKey, null)
+
+    if (defaultDeviceID != null) {
+      return defaultDeviceID
+    }
+
+    val newDefaultDeviceID = UUID.randomUUID().toString()
+
+    with (activity.getPreferences(Context.MODE_PRIVATE).edit()) {
+      putString(passkeyLocalKey, newDefaultDeviceID)
+      apply()
+    }
+
+    return newDefaultDeviceID
+  }
+
   @OptIn(DelicateCoroutinesApi::class)
   fun signUpAsync(token: String, userName: String? = null, displayName: String? = null): CompletableFuture<AuthsignalResponse<String>> =
     GlobalScope.future { signUp(token, userName, displayName) }
 
   @OptIn(DelicateCoroutinesApi::class)
-  fun signInAsync(token: String? = null): CompletableFuture<AuthsignalResponse<String>> =
-    GlobalScope.future { signIn(token) }
+  fun signInAsync(action: String? = null, token: String? = null): CompletableFuture<AuthsignalResponse<String>> =
+    GlobalScope.future { signIn(action, token) }
 
   @OptIn(DelicateCoroutinesApi::class)
   fun isAvailableOnDeviceAsync(): CompletableFuture<AuthsignalResponse<Boolean>> =

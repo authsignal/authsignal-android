@@ -28,6 +28,15 @@ class PasskeyAPI(tenantID: String, private val baseURL: String) {
 
   private val basicAuth = "Basic ${Encoder.toBase64String("$tenantID:".toByteArray())}"
 
+  suspend fun challenge(
+    action: String,
+  ): AuthsignalResponse<ChallengeResponse> {
+    val url = "$baseURL/client/challenge"
+    val body = ChallengeRequest(action)
+
+    return postRequest(url, body)
+  }
+
   suspend fun registrationOptions(
     token: String,
     userName: String? = null,
@@ -63,9 +72,10 @@ class PasskeyAPI(tenantID: String, private val baseURL: String) {
     challengeID: String,
     credential: PasskeyAuthenticationCredential,
     token: String?,
+    deviceID: String?,
   ): AuthsignalResponse<VerifyResponse> {
     val url = "$baseURL/client/verify/passkey"
-    val body = VerifyRequest(challengeID, credential)
+    val body = VerifyRequest(challengeID, credential, deviceID)
 
     return postRequest(url, body, token)
   }
@@ -93,7 +103,7 @@ class PasskeyAPI(tenantID: String, private val baseURL: String) {
   private suspend inline fun <reified TRequest, reified TResponse>postRequest(
     url: String,
     body: TRequest,
-    token: String?,
+    token: String? = null,
   ): AuthsignalResponse<TResponse> {
     val response = client.post(url) {
       contentType(ContentType.Application.Json)

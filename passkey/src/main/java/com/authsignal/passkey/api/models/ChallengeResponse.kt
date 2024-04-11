@@ -1,8 +1,8 @@
-package com.authsignal.push.api.models
+package com.authsignal.passkey.api.models
 
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class ChallengeResponse(
-  val challengeId: String? = null,
+  val challengeId: String,
 )

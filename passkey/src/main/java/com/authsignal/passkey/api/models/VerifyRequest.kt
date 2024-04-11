@@ -7,4 +7,5 @@ import kotlinx.serialization.Serializable
 data class VerifyRequest(
   val challengeId: String,
   val authenticationCredential: PasskeyAuthenticationCredential,
+  val deviceId: String? = null,
 )
