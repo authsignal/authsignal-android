@@ -21,6 +21,7 @@ class AuthsignalPasskey(
   private val manager = PasskeyManager(context, activity)
   private val activity = activity
   private val passkeyLocalKey = "@as_passkey_credential_id"
+  private val defaultDeviceLocalKey = "@as_device_id"
 
   suspend fun signUp(token: String, userName: String? = null, displayName: String? = null): AuthsignalResponse<String> {
     val optsResponse = api.registrationOptions(token, userName, displayName)
@@ -113,7 +114,6 @@ class AuthsignalPasskey(
   }
 
   private fun getDefaultDeviceID(): String {
-    val defaultDeviceLocalKey = "@as_passkey_credential_id"
     val preferences = activity.getPreferences(Context.MODE_PRIVATE)
     val defaultDeviceID = preferences.getString(defaultDeviceLocalKey, null)
 
