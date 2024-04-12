@@ -16,7 +16,7 @@ data class RegistrationOpts(
   val timeout: Int,
   val pubKeyCredParams: List<RegistrationOptsPubKeyCredParams>,
   val attestation: String,
-  val excludeCredentials: List<String>,
+  val excludeCredentials: List<RegistrationOptsExcludedCredential>,
   val authenticatorSelection: RegistrationOptsAuthenticatorSelection,
 )
 
@@ -41,8 +41,14 @@ data class RegistrationOptsPubKeyCredParams (
 
 @Serializable
 data class RegistrationOptsAuthenticatorSelection (
-  val authenticatorAttachment: String = "platform",
+  val authenticatorAttachment: String? = "platform",
   val requireResidentKey: Boolean,
   val residentKey: String,
   val userVerification: String,
+)
+
+@Serializable
+data class RegistrationOptsExcludedCredential(
+  val id: String,
+  val type: String,
 )

@@ -61,9 +61,10 @@ class PasskeyAPI(tenantID: String, private val baseURL: String) {
 
   suspend fun authenticationOptions(
     token: String?,
+    challengeID: String?
   ): AuthsignalResponse<AuthenticationOptsResponse> {
     val url = "$baseURL/client/user-authenticators/passkey/authentication-options"
-    val body = AuthenticationOptsRequest()
+    val body = AuthenticationOptsRequest(challengeID)
 
     return postRequest(url, body, token)
   }
@@ -118,8 +119,12 @@ class PasskeyAPI(tenantID: String, private val baseURL: String) {
     }
 
     return if (response.status == HttpStatusCode.OK) {
-      val data = response.body<TResponse>()
-      AuthsignalResponse(data = data)
+      try {
+        val data = response.body<TResponse>()
+        AuthsignalResponse(data = data)
+      } catch (e : Exception) {
+        AuthsignalResponse(error = e.message)
+      }
     } else {
       val error = response.bodyAsText()
       Log.e(TAG, "Passkey request error: $error")

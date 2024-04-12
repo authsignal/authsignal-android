@@ -67,7 +67,7 @@ class AuthsignalPasskey(
       challengeResponse.data?.challengeId
     }
 
-    val optsResponse = api.authenticationOptions(token)
+    val optsResponse = api.authenticationOptions(token, challengeID)
 
     val optsData = optsResponse.data ?: return AuthsignalResponse(error = optsResponse.error)
 

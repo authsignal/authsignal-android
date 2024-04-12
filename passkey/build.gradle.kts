@@ -49,6 +49,8 @@ publishing {
       version = versionName
 
       artifact("$buildDir/outputs/aar/passkey-release.aar")
+      
+      artifact(sourcesJar)
 
       pom.withXml {
         asNode().apply {
