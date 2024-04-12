@@ -50,6 +50,8 @@ publishing {
 
       artifact("$buildDir/outputs/aar/push-release.aar")
 
+      artifact(sourcesJar)
+
       pom.withXml {
         asNode().apply {
           appendNode("name", "authsignal-push-android")
