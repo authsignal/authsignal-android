@@ -3,6 +3,8 @@ package com.authsignal.passkey
 import android.app.Activity
 import android.content.Context
 import com.authsignal.passkey.api.*
+import com.authsignal.passkey.api.models.SignInResponse
+import com.authsignal.passkey.api.models.SignUpResponse
 import com.authsignal.passkey.models.AuthsignalResponse
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -23,7 +25,7 @@ class AuthsignalPasskey(
   private val passkeyLocalKey = "@as_passkey_credential_id"
   private val defaultDeviceLocalKey = "@as_device_id"
 
-  suspend fun signUp(token: String, userName: String? = null, displayName: String? = null): AuthsignalResponse<String> {
+  suspend fun signUp(token: String, userName: String? = null, displayName: String? = null): AuthsignalResponse<SignUpResponse> {
     val optsResponse = api.registrationOptions(token, userName, displayName)
 
     val optsData = optsResponse.data ?: return AuthsignalResponse(error = optsResponse.error)
@@ -57,10 +59,14 @@ class AuthsignalPasskey(
       }
     }
 
-    return AuthsignalResponse(data = authenticatorData.accessToken)
+    val signUpResponse = SignUpResponse(
+      token = authenticatorData.accessToken,
+    )
+
+    return AuthsignalResponse(data = signUpResponse)
   }
 
-  suspend fun signIn(action: String? = null, token: String? = null): AuthsignalResponse<String> {
+  suspend fun signIn(action: String? = null, token: String? = null): AuthsignalResponse<SignInResponse> {
     val challengeID = action?.let {
       val challengeResponse = api.challenge(it)
 
@@ -96,7 +102,16 @@ class AuthsignalPasskey(
       }
     }
 
-    return AuthsignalResponse(data = verifyData.accessToken)
+    val signInResponse = SignInResponse(
+      isVerified = verifyData.isVerified,
+      token = verifyData.accessToken,
+      userId = verifyData. userId,
+      userAuthenticatorId = verifyData.userAuthenticatorId,
+      userName = verifyData.username,
+      userDisplayName = verifyData.userDisplayName,
+    )
+
+    return AuthsignalResponse(data = signInResponse)
   }
 
   suspend fun isAvailableOnDevice(): AuthsignalResponse<Boolean> {
@@ -132,11 +147,11 @@ class AuthsignalPasskey(
   }
 
   @OptIn(DelicateCoroutinesApi::class)
-  fun signUpAsync(token: String, userName: String? = null, displayName: String? = null): CompletableFuture<AuthsignalResponse<String>> =
+  fun signUpAsync(token: String, userName: String? = null, displayName: String? = null): CompletableFuture<AuthsignalResponse<SignUpResponse>> =
     GlobalScope.future { signUp(token, userName, displayName) }
 
   @OptIn(DelicateCoroutinesApi::class)
-  fun signInAsync(action: String? = null, token: String? = null): CompletableFuture<AuthsignalResponse<String>> =
+  fun signInAsync(action: String? = null, token: String? = null): CompletableFuture<AuthsignalResponse<SignInResponse>> =
     GlobalScope.future { signIn(action, token) }
 
   @OptIn(DelicateCoroutinesApi::class)

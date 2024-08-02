@@ -3,11 +3,11 @@ package com.authsignal.passkey.api.models
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class VerifyResponse(
+data class SignInResponse(
   val isVerified: Boolean,
-  val accessToken: String? = null,
+  val token: String? = null,
   val userId: String? = null,
   val userAuthenticatorId: String? = null,
-  val username: String? = null,
+  val userName: String? = null,
   val userDisplayName: String? = null,
 )
