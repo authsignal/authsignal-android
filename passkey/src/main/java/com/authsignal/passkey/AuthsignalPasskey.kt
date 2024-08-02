@@ -3,9 +3,7 @@ package com.authsignal.passkey
 import android.app.Activity
 import android.content.Context
 import com.authsignal.passkey.api.*
-import com.authsignal.passkey.api.models.SignInResponse
-import com.authsignal.passkey.api.models.SignUpResponse
-import com.authsignal.passkey.models.AuthsignalResponse
+import com.authsignal.passkey.models.*
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.future.future
