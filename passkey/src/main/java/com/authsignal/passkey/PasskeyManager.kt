@@ -67,10 +67,11 @@ class PasskeyManager(context: Context, private val activity: Activity) {
       AuthsignalResponse(data = data)
     } catch (e : GetCredentialException){
       val error = e.message.toString()
+      val errorType = e.type
 
       Log.e(TAG, "getCredential failed: $error")
 
-      AuthsignalResponse(error = error)
+      AuthsignalResponse(error = error, errorType = errorType)
     }
   }
 

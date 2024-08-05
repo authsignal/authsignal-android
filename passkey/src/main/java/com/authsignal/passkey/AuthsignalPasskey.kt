@@ -79,7 +79,10 @@ class AuthsignalPasskey(
 
     val authResponse = manager.auth(optionsJson)
 
-    val credential =  authResponse.data ?: return AuthsignalResponse(error = authResponse.error)
+    val credential =  authResponse.data ?: return AuthsignalResponse(
+      error = authResponse.error,
+      errorType = authResponse.errorType,
+    )
 
     val deviceID =  getDefaultDeviceID()
 
