@@ -66,12 +66,19 @@ class PasskeyManager(context: Context, private val activity: Activity) {
 
       AuthsignalResponse(data = data)
     } catch (e : GetCredentialException){
-      val error = e.message.toString()
+      val error = mapGetCredentialFailure(e)
       val errorType = e.type
 
       Log.e(TAG, "getCredential failed: $error")
 
       AuthsignalResponse(error = error, errorType = errorType)
+    }
+  }
+
+  private fun mapGetCredentialFailure(e: GetCredentialException): String {
+    return when (e) {
+      is GetCredentialCancellationException -> "user_cancelled_credential"
+      else -> "unexpected_exception ${e::class.java.name}"
     }
   }
 
