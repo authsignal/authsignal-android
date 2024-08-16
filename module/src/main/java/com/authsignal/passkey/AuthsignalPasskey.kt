@@ -24,8 +24,8 @@ class AuthsignalPasskey(
   private val passkeyLocalKey = "@as_passkey_credential_id"
   private val defaultDeviceLocalKey = "@as_device_id"
 
-  suspend fun signUp(token: String, userName: String? = null, displayName: String? = null): AuthsignalResponse<SignUpResponse> {
-    val optsResponse = api.registrationOptions(token, userName, displayName)
+  suspend fun signUp(token: String, username: String? = null, displayName: String? = null): AuthsignalResponse<SignUpResponse> {
+    val optsResponse = api.registrationOptions(token, username, displayName)
 
     val optsData = optsResponse.data ?: return AuthsignalResponse(error = optsResponse.error)
 
@@ -149,8 +149,8 @@ class AuthsignalPasskey(
   }
 
   @OptIn(DelicateCoroutinesApi::class)
-  fun signUpAsync(token: String, userName: String? = null, displayName: String? = null): CompletableFuture<AuthsignalResponse<SignUpResponse>> =
-    GlobalScope.future { signUp(token, userName, displayName) }
+  fun signUpAsync(token: String, username: String? = null, displayName: String? = null): CompletableFuture<AuthsignalResponse<SignUpResponse>> =
+    GlobalScope.future { signUp(token, username, displayName) }
 
   @OptIn(DelicateCoroutinesApi::class)
   fun signInAsync(action: String? = null, token: String? = null): CompletableFuture<AuthsignalResponse<SignInResponse>> =
