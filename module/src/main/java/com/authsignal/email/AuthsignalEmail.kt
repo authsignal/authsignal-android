@@ -1,6 +1,6 @@
 package com.authsignal.email
 
-import com.authsignal.AuthsignalBase
+import com.authsignal.TokenCache
 import com.authsignal.email.api.EmailAPI
 import com.authsignal.models.AuthsignalResponse
 import com.authsignal.models.ChallengeResponse
@@ -13,23 +13,25 @@ import java.util.concurrent.CompletableFuture
 
 class AuthsignalEmail(
   tenantID: String,
-  baseURL: String): AuthsignalBase() {
+  baseURL: String
+) {
   private val api = EmailAPI(tenantID, baseURL)
+  private val cache = TokenCache.shared
 
   suspend fun enroll(email: String): AuthsignalResponse<EnrollResponse> {
-    val token = this.token ?: return handleTokenNotSetError()
+    val token = cache.token ?: return cache.handleTokenNotSetError()
 
     return api.enroll(token, email)
   }
 
   suspend fun challenge(): AuthsignalResponse<ChallengeResponse> {
-    val token = this.token ?: return handleTokenNotSetError()
+    val token = cache.token ?: return cache.handleTokenNotSetError()
 
     return api.challenge(token)
   }
 
   suspend fun verify(code: String): AuthsignalResponse<VerifyResponse> {
-    val token = this.token ?: return handleTokenNotSetError()
+    val token = cache.token ?: return cache.handleTokenNotSetError()
 
     return api.verify(token, code)
   }
