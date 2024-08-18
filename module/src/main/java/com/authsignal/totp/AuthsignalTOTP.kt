@@ -1,6 +1,6 @@
 package com.authsignal.totp
 
-import com.authsignal.AuthsignalBase
+import com.authsignal.TokenCache
 import com.authsignal.totp.api.TOTPAPI
 import com.authsignal.models.AuthsignalResponse
 import com.authsignal.totp.api.models.EnrollTOTPResponse
@@ -12,17 +12,19 @@ import java.util.concurrent.CompletableFuture
 
 class AuthsignalTOTP(
   tenantID: String,
-  baseURL: String): AuthsignalBase() {
+  baseURL: String
+) {
   private val api = TOTPAPI(tenantID, baseURL)
+  private val cache = TokenCache.shared
 
   suspend fun enroll(): AuthsignalResponse<EnrollTOTPResponse> {
-    val token = this.token ?: return handleTokenNotSetError()
+    val token = cache.token ?: return cache.handleTokenNotSetError()
 
     return api.enroll(token)
   }
 
   suspend fun verify(code: String): AuthsignalResponse<VerifyResponse> {
-    val token = this.token ?: return handleTokenNotSetError()
+    val token = cache.token ?: return cache.handleTokenNotSetError()
 
     return api.verify(token, code)
   }
