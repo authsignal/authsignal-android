@@ -1,9 +1,0 @@
-package com.authsignal.push.models
-
-import kotlinx.serialization.Serializable
-
-@Serializable
-data class AuthsignalResponse<T>(
-  val data: T? = null,
-  val error: String? = null,
-)

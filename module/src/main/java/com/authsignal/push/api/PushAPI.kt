@@ -2,8 +2,8 @@ package com.authsignal.push.api
 
 import android.util.Log
 import com.authsignal.Encoder
+import com.authsignal.models.AuthsignalResponse
 import com.authsignal.push.api.models.*
-import com.authsignal.push.models.AuthsignalResponse
 import com.authsignal.push.models.PushCredential
 import io.ktor.client.*
 import io.ktor.client.call.*

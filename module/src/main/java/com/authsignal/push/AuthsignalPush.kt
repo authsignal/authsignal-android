@@ -1,8 +1,9 @@
 package com.authsignal.push
 
 import android.os.Build
+import com.authsignal.TokenCache
+import com.authsignal.models.AuthsignalResponse
 import com.authsignal.push.api.PushAPI
-import com.authsignal.push.models.AuthsignalResponse
 import com.authsignal.push.models.PushCredential
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -23,15 +24,17 @@ class AuthsignalPush(
   }
 
   suspend fun addCredential(
-    token: String,
+    token: String? = TokenCache.shared.token,
     deviceName: String? = null,
   ): AuthsignalResponse<Boolean> {
+    val userToken = token ?: return TokenCache.shared.handleTokenNotSetError()
+
     val publicKey = KeyManager.getOrCreatePublicKey()
       ?: return AuthsignalResponse(error = "Error registering key pair")
 
     val device = deviceName ?: getDeviceName()
 
-    return api.addCredential(token, publicKey, device)
+    return api.addCredential(userToken, publicKey, device)
   }
 
   suspend fun removeCredential(): AuthsignalResponse<Boolean> {
@@ -100,7 +103,7 @@ class AuthsignalPush(
 
   @OptIn(DelicateCoroutinesApi::class)
   fun addCredentialAsync(
-    token: String,
+    token: String? = null,
     deviceName: String? = null,
   ): CompletableFuture<AuthsignalResponse<Boolean>> =
     GlobalScope.future { addCredential(token, deviceName) }

@@ -2,6 +2,7 @@ package com.authsignal.passkey
 
 import android.app.Activity
 import android.content.Context
+import com.authsignal.TokenCache
 import com.authsignal.models.AuthsignalResponse
 import com.authsignal.passkey.api.*
 import com.authsignal.passkey.models.*
@@ -24,8 +25,14 @@ class AuthsignalPasskey(
   private val passkeyLocalKey = "@as_passkey_credential_id"
   private val defaultDeviceLocalKey = "@as_device_id"
 
-  suspend fun signUp(token: String, username: String? = null, displayName: String? = null): AuthsignalResponse<SignUpResponse> {
-    val optsResponse = api.registrationOptions(token, username, displayName)
+  suspend fun signUp(
+    token: String? = TokenCache.shared.token,
+    username: String? = null,
+    displayName: String? = null
+  ): AuthsignalResponse<SignUpResponse> {
+    val userToken = token ?: return TokenCache.shared.handleTokenNotSetError()
+
+    val optsResponse = api.registrationOptions(userToken, username, displayName)
 
     val optsData = optsResponse.data ?: return AuthsignalResponse(error = optsResponse.error)
 
@@ -43,7 +50,7 @@ class AuthsignalPasskey(
     val credential = registerResponse.data ?: return AuthsignalResponse(error = registerResponse.error)
 
     val addAuthenticatorResponse = api.addAuthenticator(
-      token,
+      userToken,
       optsData.challengeId,
       credential,
     )
@@ -65,7 +72,10 @@ class AuthsignalPasskey(
     return AuthsignalResponse(data = signUpResponse)
   }
 
-  suspend fun signIn(action: String? = null, token: String? = null): AuthsignalResponse<SignInResponse> {
+  suspend fun signIn(
+    action: String? = null,
+    token: String? = null
+  ): AuthsignalResponse<SignInResponse> {
     val challengeID = action?.let {
       val challengeResponse = api.challenge(it)
 
@@ -149,7 +159,7 @@ class AuthsignalPasskey(
   }
 
   @OptIn(DelicateCoroutinesApi::class)
-  fun signUpAsync(token: String, username: String? = null, displayName: String? = null): CompletableFuture<AuthsignalResponse<SignUpResponse>> =
+  fun signUpAsync(token: String? = null, username: String? = null, displayName: String? = null): CompletableFuture<AuthsignalResponse<SignUpResponse>> =
     GlobalScope.future { signUp(token, username, displayName) }
 
   @OptIn(DelicateCoroutinesApi::class)

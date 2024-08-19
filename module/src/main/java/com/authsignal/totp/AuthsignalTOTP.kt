@@ -26,7 +26,13 @@ class AuthsignalTOTP(
   suspend fun verify(code: String): AuthsignalResponse<VerifyResponse> {
     val token = cache.token ?: return cache.handleTokenNotSetError()
 
-    return api.verify(token, code)
+    val verifyResponse = api.verify(token, code)
+
+    verifyResponse.data?.token.let {
+      cache.token = it
+    }
+
+    return verifyResponse
   }
 
   @OptIn(DelicateCoroutinesApi::class)
