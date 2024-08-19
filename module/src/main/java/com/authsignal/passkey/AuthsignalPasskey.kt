@@ -26,11 +26,11 @@ class AuthsignalPasskey(
   private val defaultDeviceLocalKey = "@as_device_id"
 
   suspend fun signUp(
-    token: String? = TokenCache.shared.token,
+    token: String? = null,
     username: String? = null,
     displayName: String? = null
   ): AuthsignalResponse<SignUpResponse> {
-    val userToken = token ?: return TokenCache.shared.handleTokenNotSetError()
+    val userToken = token ?: TokenCache.shared.token ?: return TokenCache.shared.handleTokenNotSetError()
 
     val optsResponse = api.registrationOptions(userToken, username, displayName)
 

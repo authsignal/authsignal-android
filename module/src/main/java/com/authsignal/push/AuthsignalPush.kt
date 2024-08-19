@@ -24,10 +24,10 @@ class AuthsignalPush(
   }
 
   suspend fun addCredential(
-    token: String? = TokenCache.shared.token,
+    token: String? = null,
     deviceName: String? = null,
   ): AuthsignalResponse<Boolean> {
-    val userToken = token ?: return TokenCache.shared.handleTokenNotSetError()
+    val userToken = token ?: TokenCache.shared.token ?: return TokenCache.shared.handleTokenNotSetError()
 
     val publicKey = KeyManager.getOrCreatePublicKey()
       ?: return AuthsignalResponse(error = "Error registering key pair")
