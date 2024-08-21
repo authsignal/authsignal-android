@@ -76,13 +76,13 @@ class AuthsignalPasskey(
     action: String? = null,
     token: String? = null
   ): AuthsignalResponse<SignInResponse> {
-    val challengeID = action?.let {
+    val challengeId = action?.let {
       val challengeResponse = api.challenge(it)
 
       challengeResponse.data?.challengeId
     }
 
-    val optsResponse = api.authenticationOptions(token, challengeID)
+    val optsResponse = api.authenticationOptions(token, challengeId)
 
     val optsData = optsResponse.data ?: return AuthsignalResponse(error = optsResponse.error)
 
@@ -95,13 +95,13 @@ class AuthsignalPasskey(
       errorType = authResponse.errorType,
     )
 
-    val deviceID =  getDefaultDeviceID()
+    val deviceId =  getDefaultDeviceId()
 
     val verifyResponse = api.verify(
       optsData.challengeId,
       credential,
       token,
-      deviceID,
+      deviceId,
     )
 
     val verifyData = verifyResponse.data
@@ -128,10 +128,10 @@ class AuthsignalPasskey(
 
   suspend fun isAvailableOnDevice(): AuthsignalResponse<Boolean> {
     val preferences = activity.getPreferences(Context.MODE_PRIVATE)
-    val credentialID = preferences.getString(passkeyLocalKey, null)
+    val credentialId = preferences.getString(passkeyLocalKey, null)
       ?: return AuthsignalResponse(data = false)
 
-    val passkeyAuthenticatorResponse = api.getPasskeyAuthenticator(credentialID)
+    val passkeyAuthenticatorResponse = api.getPasskeyAuthenticator(credentialId)
 
     return if (passkeyAuthenticatorResponse.error != null) {
       AuthsignalResponse(data = false, error = passkeyAuthenticatorResponse.error)
@@ -140,22 +140,22 @@ class AuthsignalPasskey(
     }
   }
 
-  private fun getDefaultDeviceID(): String {
+  private fun getDefaultDeviceId(): String {
     val preferences = activity.getPreferences(Context.MODE_PRIVATE)
-    val defaultDeviceID = preferences.getString(defaultDeviceLocalKey, null)
+    val defaultDeviceId = preferences.getString(defaultDeviceLocalKey, null)
 
-    if (defaultDeviceID != null) {
-      return defaultDeviceID
+    if (defaultDeviceId != null) {
+      return defaultDeviceId
     }
 
-    val newDefaultDeviceID = UUID.randomUUID().toString()
+    val newDefaultDeviceId = UUID.randomUUID().toString()
 
     with (activity.getPreferences(Context.MODE_PRIVATE).edit()) {
-      putString(passkeyLocalKey, newDefaultDeviceID)
+      putString(passkeyLocalKey, newDefaultDeviceId)
       apply()
     }
 
-    return newDefaultDeviceID
+    return newDefaultDeviceId
   }
 
   @OptIn(DelicateCoroutinesApi::class)

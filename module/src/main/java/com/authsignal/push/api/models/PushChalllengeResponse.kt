@@ -5,4 +5,9 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class PushChallengeResponse(
   val challengeId: String? = null,
+  val actionCode: String? = null,
+  val idempotencyKey: String? = null,
+  val userAgent: String? = null,
+  val deviceId: String? = null,
+  val ipAddress: String? = null,
 )

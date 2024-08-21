@@ -4,6 +4,7 @@ import android.os.Build
 import com.authsignal.TokenCache
 import com.authsignal.models.AuthsignalResponse
 import com.authsignal.push.api.PushAPI
+import com.authsignal.push.models.PushChallenge
 import com.authsignal.push.models.PushCredential
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -57,11 +58,28 @@ class AuthsignalPush(
     return removeCredentialResponse
   }
 
-  suspend fun getChallenge(): AuthsignalResponse<String> {
+  suspend fun getChallenge(): AuthsignalResponse<PushChallenge?> {
     val publicKey = KeyManager.getPublicKey()
       ?: return AuthsignalResponse(error = "Public key not found")
 
-    return api.getChallenge(publicKey)
+    val pushChallengeResponse = api.getChallenge(publicKey)
+
+    val pushChallengeData = pushChallengeResponse.data
+      ?: return AuthsignalResponse(data = null)
+
+    val challengeId = pushChallengeData.challengeId
+      ?: return AuthsignalResponse(data = null)
+
+    val pushChallenge = PushChallenge(
+      challengeId = challengeId,
+      actionCode = pushChallengeData.actionCode,
+      idempotencyKey = pushChallengeData.idempotencyKey,
+      userAgent = pushChallengeData.userAgent,
+      ipAddress = pushChallengeData.ipAddress,
+      deviceId = pushChallengeData.deviceId,
+    )
+
+    return AuthsignalResponse(data = pushChallenge)
   }
 
   suspend fun updateChallenge(
@@ -113,7 +131,7 @@ class AuthsignalPush(
     GlobalScope.future { removeCredential() }
 
   @OptIn(DelicateCoroutinesApi::class)
-  fun getChallengeAsync(): CompletableFuture<AuthsignalResponse<String>> =
+  fun getChallengeAsync(): CompletableFuture<AuthsignalResponse<PushChallenge?>> =
     GlobalScope.future { getChallenge() }
 
   @OptIn(DelicateCoroutinesApi::class)

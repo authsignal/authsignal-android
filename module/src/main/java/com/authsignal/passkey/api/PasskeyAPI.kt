@@ -51,33 +51,33 @@ class PasskeyAPI(tenantID: String, private val baseURL: String) {
 
   suspend fun addAuthenticator(
     token: String,
-    challengeID: String,
+    challengeId: String,
     credential: PasskeyRegistrationCredential,
   ): AuthsignalResponse<AddPasskeyAuthenticatorResponse> {
     val url = "$baseURL/client/user-authenticators/passkey"
-    val body = AddPasskeyAuthenticatorRequest(challengeID, credential)
+    val body = AddPasskeyAuthenticatorRequest(challengeId, credential)
 
     return postRequest(url, body, token)
   }
 
   suspend fun authenticationOptions(
     token: String?,
-    challengeID: String?
+    challengeId: String?
   ): AuthsignalResponse<AuthenticationOptsResponse> {
     val url = "$baseURL/client/user-authenticators/passkey/authentication-options"
-    val body = AuthenticationOptsRequest(challengeID)
+    val body = AuthenticationOptsRequest(challengeId)
 
     return postRequest(url, body, token)
   }
 
   suspend fun verify(
-    challengeID: String,
+    challengeId: String,
     credential: PasskeyAuthenticationCredential,
     token: String?,
-    deviceID: String?,
+    deviceId: String?,
   ): AuthsignalResponse<VerifyPasskeyResponse> {
     val url = "$baseURL/client/verify/passkey"
-    val body = VerifyPasskeyRequest(challengeID, credential, deviceID)
+    val body = VerifyPasskeyRequest(challengeId, credential, deviceId)
 
     return postRequest(url, body, token)
   }
