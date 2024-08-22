@@ -10,8 +10,8 @@ import java.security.spec.X509EncodedKeySpec
 object KeyManager {
   private const val keyName = "authsignal_signing_key"
 
-  fun getOrCreatePublicKey(): String? {
-    return getPublicKey() ?: createKeyPair()
+  fun getOrCreatePublicKey(userAuthenticationRequired: Boolean): String? {
+    return getPublicKey() ?: createKeyPair(userAuthenticationRequired)
   }
 
   fun getPublicKey(): String? {
@@ -47,7 +47,7 @@ object KeyManager {
     return Encoder.toBase64String(spec.encoded)
   }
 
-  private fun createKeyPair(): String? {
+  private fun createKeyPair(userAuthenticationRequired: Boolean): String? {
     val provider = "AndroidKeyStore"
     val algorithm = KeyProperties.KEY_ALGORITHM_EC
     val digests = KeyProperties.DIGEST_SHA256
@@ -55,6 +55,7 @@ object KeyManager {
 
     val params = KeyGenParameterSpec.Builder(keyName, purposes)
       .setDigests(digests)
+      .setUserAuthenticationRequired(userAuthenticationRequired)
       .build()
 
     return try {
