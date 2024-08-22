@@ -27,10 +27,11 @@ class AuthsignalPush(
   suspend fun addCredential(
     token: String? = null,
     deviceName: String? = null,
+    userAuthenticationRequired: Boolean = false
   ): AuthsignalResponse<Boolean> {
     val userToken = token ?: TokenCache.shared.token ?: return TokenCache.shared.handleTokenNotSetError()
 
-    val publicKey = KeyManager.getOrCreatePublicKey()
+    val publicKey = KeyManager.getOrCreatePublicKey(userAuthenticationRequired)
       ?: return AuthsignalResponse(error = "Error registering key pair")
 
     val device = deviceName ?: getDeviceName()
@@ -123,8 +124,9 @@ class AuthsignalPush(
   fun addCredentialAsync(
     token: String? = null,
     deviceName: String? = null,
+    userAuthenticationRequired: Boolean = false
   ): CompletableFuture<AuthsignalResponse<Boolean>> =
-    GlobalScope.future { addCredential(token, deviceName) }
+    GlobalScope.future { addCredential(token, deviceName, userAuthenticationRequired) }
 
   @OptIn(DelicateCoroutinesApi::class)
   fun removeCredentialAsync(): CompletableFuture<AuthsignalResponse<Boolean>> =
