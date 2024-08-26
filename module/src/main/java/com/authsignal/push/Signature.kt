@@ -1,9 +1,12 @@
 package com.authsignal.push
 
+import android.util.Log
 import com.authsignal.Encoder
 import java.nio.charset.StandardCharsets
 import java.security.KeyStore.PrivateKeyEntry
 import java.security.Signature
+
+private const val TAG = "authsignal"
 
 object Signer {
   fun sign(message: String, key: PrivateKeyEntry): String? {
@@ -19,6 +22,8 @@ object Signer {
 
       Encoder.toBase64String(signature)
     } catch (e: Exception) {
+      Log.e(TAG, "Signature generation failed: $e")
+
       null
     }
   }

@@ -71,8 +71,12 @@ class AuthsignalPush(
     val challengeId = pushChallengeData.challengeId
       ?: return AuthsignalResponse(data = null)
 
+    val userId = pushChallengeData.userId
+      ?: return AuthsignalResponse(data = null)
+
     val pushChallenge = PushChallenge(
       challengeId = challengeId,
+      userId = userId,
       actionCode = pushChallengeData.actionCode,
       idempotencyKey = pushChallengeData.idempotencyKey,
       userAgent = pushChallengeData.userAgent,
