@@ -18,8 +18,10 @@ class AuthsignalPush(
   private val api = PushAPI(tenantID, baseURL)
 
   suspend fun getCredential(): AuthsignalResponse<PushCredential> {
-    val publicKey = KeyManager.getPublicKey()
-      ?: return AuthsignalResponse(error = "Public key not found")
+    val publicKeyResponse = KeyManager.getPublicKey()
+
+    val publicKey = publicKeyResponse.data
+      ?: return AuthsignalResponse(error = publicKeyResponse.error)
 
     return api.getCredential(publicKey)
   }
@@ -45,15 +47,18 @@ class AuthsignalPush(
   }
 
   suspend fun removeCredential(): AuthsignalResponse<Boolean> {
-    val key = KeyManager.getKey()
-      ?: return AuthsignalResponse(error = "Error retrieving key pair")
+    val keyResponse = KeyManager.getKey()
+
+    val key = keyResponse.data
+      ?: return AuthsignalResponse(error = keyResponse.error)
 
     val publicKey = KeyManager.derivePublicKey(key)
 
     val message = getTimeBasedDataToSign()
 
-    val signature = Signer.sign(message, key)
-      ?: return AuthsignalResponse(error = "Error generating signature")
+    val signatureResponse = Signer.sign(message, key)
+
+    val signature = signatureResponse.data ?: return AuthsignalResponse(error = signatureResponse.error)
 
     val removeCredentialResponse = api.removeCredential(publicKey, signature)
 
@@ -65,8 +70,10 @@ class AuthsignalPush(
   }
 
   suspend fun getChallenge(): AuthsignalResponse<PushChallenge?> {
-    val publicKey = KeyManager.getPublicKey()
-      ?: return AuthsignalResponse(error = "Public key not found")
+    val publicKeyResponse = KeyManager.getPublicKey()
+
+    val publicKey = publicKeyResponse.data
+      ?: return AuthsignalResponse(error = publicKeyResponse.error)
 
     val pushChallengeResponse = api.getChallenge(publicKey)
 
@@ -97,13 +104,16 @@ class AuthsignalPush(
     approved: Boolean,
     verificationCode: String? = null
   ): AuthsignalResponse<Boolean> {
-    val key = KeyManager.getKey()
-      ?: return AuthsignalResponse(error = "Error retrieving key pair")
+    val keyResponse = KeyManager.getKey()
+
+    val key = keyResponse.data
+      ?: return AuthsignalResponse(error = keyResponse.error)
 
     val publicKey = KeyManager.derivePublicKey(key)
 
-    val signature = Signer.sign(challengeId, key)
-      ?: return AuthsignalResponse(error = "Error generating signature")
+    val signatureResponse = Signer.sign(challengeId, key)
+
+    val signature = signatureResponse.data ?: return AuthsignalResponse(error = signatureResponse.error)
 
     return api.updateChallenge(challengeId, publicKey, signature, approved, verificationCode)
   }

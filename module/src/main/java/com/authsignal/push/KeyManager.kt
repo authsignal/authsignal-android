@@ -15,28 +15,33 @@ private const val keyName = "authsignal_signing_key"
 
 object KeyManager {
   fun getOrCreatePublicKey(userAuthenticationRequired: Boolean): AuthsignalResponse<String> {
-    val publicKey = getPublicKey()
+    val publicKeyResponse = getPublicKey()
 
-    if (publicKey != null) {
-      return AuthsignalResponse(data = publicKey)
+    if (publicKeyResponse.data != null) {
+      return AuthsignalResponse(data = publicKeyResponse.data)
     }
 
     return createKeyPair(userAuthenticationRequired)
   }
 
-  fun getPublicKey(): String? {
-    val key = getKey() ?: return null
+  fun getPublicKey(): AuthsignalResponse<String> {
+    val keyResponse = getKey()
 
-    return derivePublicKey(key)
+    val key = keyResponse.data ?: return AuthsignalResponse(error = keyResponse.error)
+
+    val publicKey = derivePublicKey(key)
+
+    return AuthsignalResponse(data = publicKey)
   }
 
-  fun getKey(): KeyStore.PrivateKeyEntry? {
+  fun getKey(): AuthsignalResponse<KeyStore.PrivateKeyEntry> {
     return try {
       val keyStore = KeyStore.getInstance("AndroidKeyStore")
       keyStore.load(null)
-      keyStore.getEntry(keyName, null) as KeyStore.PrivateKeyEntry
+      val entry = keyStore.getEntry(keyName, null) as KeyStore.PrivateKeyEntry
+      AuthsignalResponse(data = entry)
     } catch (e: Exception) {
-      return null
+      AuthsignalResponse(error = e.message)
     }
   }
 
@@ -47,6 +52,8 @@ object KeyManager {
       keyStore.deleteEntry(keyName)
       true
     } catch (e: java.lang.Exception) {
+      Log.e(TAG, "deleteKey failed: ${e.message}")
+
       return false
     }
   }
