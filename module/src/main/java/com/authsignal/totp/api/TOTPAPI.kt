@@ -18,7 +18,7 @@ import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 
-private const val TAG = "authsignal"
+private const val TAG = "com.authsignal.totp.api"
 
 class TOTPAPI(tenantID: String, private val baseURL: String) {
   private val client = HttpClient(Android) {
