@@ -6,7 +6,7 @@ import java.nio.charset.StandardCharsets
 import java.security.KeyStore.PrivateKeyEntry
 import java.security.Signature
 
-private const val TAG = "authsignal"
+private const val TAG = "com.authsignal.push"
 
 object Signer {
   fun sign(message: String, key: PrivateKeyEntry): String? {

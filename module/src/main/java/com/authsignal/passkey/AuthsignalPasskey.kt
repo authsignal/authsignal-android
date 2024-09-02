@@ -24,6 +24,7 @@ class AuthsignalPasskey(
   private val activity = activity
   private val passkeyLocalKey = "@as_passkey_credential_id"
   private val defaultDeviceLocalKey = "@as_device_id"
+  private val cache = TokenCache.shared
 
   suspend fun signUp(
     token: String? = null,
@@ -69,6 +70,10 @@ class AuthsignalPasskey(
       token = authenticatorData.accessToken,
     )
 
+    authenticatorData.accessToken.let {
+      cache.token = it
+    }
+
     return AuthsignalResponse(data = signUpResponse)
   }
 
@@ -112,6 +117,10 @@ class AuthsignalPasskey(
         putString(passkeyLocalKey, credential.rawId)
         apply()
       }
+    }
+
+    verifyData.accessToken.let {
+      cache.token = it
     }
 
     val signInResponse = SignInResponse(

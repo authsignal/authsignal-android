@@ -3,7 +3,7 @@ package com.authsignal
 import android.util.Log
 import com.authsignal.models.AuthsignalResponse
 
-private const val TAG = "authsignal"
+private const val TAG = "com.authsignal"
 
 class TokenCache private constructor() {
   var token: String? = null

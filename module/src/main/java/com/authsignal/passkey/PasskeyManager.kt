@@ -11,7 +11,7 @@ import com.authsignal.passkey.models.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.decodeFromString
 
-private const val TAG = "authsignal"
+private const val TAG = "com.authsignal.passkey"
 
 class PasskeyManager(context: Context, private val activity: Activity) {
   private val credentialManager = CredentialManager.create(context)

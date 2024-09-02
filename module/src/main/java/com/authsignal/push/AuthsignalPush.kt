@@ -31,8 +31,13 @@ class AuthsignalPush(
   ): AuthsignalResponse<Boolean> {
     val userToken = token ?: TokenCache.shared.token ?: return TokenCache.shared.handleTokenNotSetError()
 
-    val publicKey = KeyManager.getOrCreatePublicKey(userAuthenticationRequired)
-      ?: return AuthsignalResponse(error = "Error registering key pair")
+    val publicKeyResponse = KeyManager.getOrCreatePublicKey(userAuthenticationRequired)
+
+    val publicKey = publicKeyResponse.data ?: return AuthsignalResponse(
+      data = false,
+      error = publicKeyResponse.error,
+      errorType = publicKeyResponse.errorType,
+    )
 
     val device = deviceName ?: getDeviceName()
 
