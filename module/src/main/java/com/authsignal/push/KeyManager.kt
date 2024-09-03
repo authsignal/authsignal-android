@@ -1,8 +1,10 @@
 package com.authsignal.push
 
+import android.os.Build
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Log
+import androidx.annotation.RequiresApi
 import com.authsignal.Encoder
 import com.authsignal.models.AuthsignalResponse
 import java.security.InvalidAlgorithmParameterException
@@ -14,14 +16,18 @@ private const val TAG = "com.authsignal.push"
 private const val keyName = "authsignal_signing_key"
 
 object KeyManager {
-  fun getOrCreatePublicKey(userAuthenticationRequired: Boolean): AuthsignalResponse<String> {
+  fun getOrCreatePublicKey(
+    userAuthenticationRequired: Boolean,
+    timeout: Int,
+    authorizationType: Int
+  ): AuthsignalResponse<String> {
     val publicKeyResponse = getPublicKey()
 
     if (publicKeyResponse.data != null) {
       return AuthsignalResponse(data = publicKeyResponse.data)
     }
 
-    return createKeyPair(userAuthenticationRequired)
+    return createKeyPair(userAuthenticationRequired, timeout, authorizationType)
   }
 
   fun getPublicKey(): AuthsignalResponse<String> {
@@ -64,16 +70,25 @@ object KeyManager {
     return Encoder.toBase64String(spec.encoded)
   }
 
-  private fun createKeyPair(userAuthenticationRequired: Boolean): AuthsignalResponse<String> {
+  private fun createKeyPair(
+    userAuthenticationRequired: Boolean,
+    timeout: Int,
+    authorizationType: Int
+  ): AuthsignalResponse<String> {
     val provider = "AndroidKeyStore"
     val algorithm = KeyProperties.KEY_ALGORITHM_EC
     val digests = KeyProperties.DIGEST_SHA256
     val purposes = KeyProperties.PURPOSE_SIGN
 
-    val params = KeyGenParameterSpec.Builder(keyName, purposes)
+    val paramsBuilder = KeyGenParameterSpec.Builder(keyName, purposes)
       .setDigests(digests)
       .setUserAuthenticationRequired(userAuthenticationRequired)
-      .build()
+
+    if (userAuthenticationRequired && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+      paramsBuilder.setUserAuthenticationParameters(timeout, authorizationType)
+    }
+
+    val params = paramsBuilder.build()
 
     return try {
       val generator = KeyPairGenerator.getInstance(algorithm, provider)

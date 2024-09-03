@@ -29,11 +29,17 @@ class AuthsignalPush(
   suspend fun addCredential(
     token: String? = null,
     deviceName: String? = null,
-    userAuthenticationRequired: Boolean = false
+    userAuthenticationRequired: Boolean = false,
+    timeout: Int = 0,
+    authorizationType: Int = 0,
   ): AuthsignalResponse<Boolean> {
     val userToken = token ?: TokenCache.shared.token ?: return TokenCache.shared.handleTokenNotSetError()
 
-    val publicKeyResponse = KeyManager.getOrCreatePublicKey(userAuthenticationRequired)
+    val publicKeyResponse = KeyManager.getOrCreatePublicKey(
+      userAuthenticationRequired,
+      timeout,
+      authorizationType
+    )
 
     val publicKey = publicKeyResponse.data ?: return AuthsignalResponse(
       data = false,
@@ -143,9 +149,19 @@ class AuthsignalPush(
   fun addCredentialAsync(
     token: String? = null,
     deviceName: String? = null,
-    userAuthenticationRequired: Boolean = false
+    userAuthenticationRequired: Boolean = false,
+    timeout: Int = 0,
+    authorizationType: Int = 0
   ): CompletableFuture<AuthsignalResponse<Boolean>> =
-    GlobalScope.future { addCredential(token, deviceName, userAuthenticationRequired) }
+    GlobalScope.future {
+      addCredential(
+        token,
+        deviceName,
+        userAuthenticationRequired,
+        timeout,
+        authorizationType
+      )
+    }
 
   @OptIn(DelicateCoroutinesApi::class)
   fun removeCredentialAsync(): CompletableFuture<AuthsignalResponse<Boolean>> =
