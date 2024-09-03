@@ -9,6 +9,7 @@ import com.authsignal.push.models.PushCredential
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.future.future
+import java.security.Signature
 import java.util.concurrent.CompletableFuture
 import kotlin.math.floor
 
@@ -52,7 +53,7 @@ class AuthsignalPush(
     return api.addCredential(userToken, publicKey, device)
   }
 
-  suspend fun removeCredential(): AuthsignalResponse<Boolean> {
+  suspend fun removeCredential(signer: Signature? = null): AuthsignalResponse<Boolean> {
     val keyResponse = KeyManager.getKey()
 
     val key = keyResponse.data
@@ -62,7 +63,11 @@ class AuthsignalPush(
 
     val message = getTimeBasedDataToSign()
 
-    val signatureResponse = Signer.sign(message, key)
+    val signatureResponse = if (signer != null) {
+      Signer.finishSigning(message, signer)
+    } else {
+      Signer.sign(message, key)
+    }
 
     val signature = signatureResponse.data ?: return AuthsignalResponse(error = signatureResponse.error)
 
@@ -108,20 +113,34 @@ class AuthsignalPush(
   suspend fun updateChallenge(
     challengeId: String,
     approved: Boolean,
-    verificationCode: String? = null
+    verificationCode: String? = null,
+    signer: Signature? = null
   ): AuthsignalResponse<Boolean> {
     val keyResponse = KeyManager.getKey()
 
     val key = keyResponse.data
       ?: return AuthsignalResponse(error = keyResponse.error)
 
-    val publicKey = KeyManager.derivePublicKey(key)
-
-    val signatureResponse = Signer.sign(challengeId, key)
+    val signatureResponse = if (signer != null) {
+      Signer.finishSigning(challengeId, signer)
+    } else {
+      Signer.sign(challengeId, key)
+    }
 
     val signature = signatureResponse.data ?: return AuthsignalResponse(error = signatureResponse.error)
 
+    val publicKey = KeyManager.derivePublicKey(key)
+
     return api.updateChallenge(challengeId, publicKey, signature, approved, verificationCode)
+  }
+
+  fun startSigning(): Signature? {
+    val keyResponse = KeyManager.getKey()
+
+    val key = keyResponse.data
+      ?: return null
+
+    return Signer.startSigning(key)
   }
 
   private fun getTimeBasedDataToSign(): String {
@@ -149,17 +168,11 @@ class AuthsignalPush(
   fun addCredentialAsync(
     token: String? = null,
     deviceName: String? = null,
-    userAuthenticationRequired: Boolean = false,
-    timeout: Int = 0,
-    authorizationType: Int = 0
   ): CompletableFuture<AuthsignalResponse<Boolean>> =
     GlobalScope.future {
       addCredential(
         token,
         deviceName,
-        userAuthenticationRequired,
-        timeout,
-        authorizationType
       )
     }
 

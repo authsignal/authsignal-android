@@ -28,4 +28,28 @@ object Signer {
       AuthsignalResponse(error = e.message)
     }
   }
+
+  fun startSigning(key: PrivateKeyEntry): Signature {
+    val signer = Signature.getInstance("SHA256withECDSA")
+
+    signer.initSign(key.privateKey)
+
+    return signer
+  }
+
+  fun finishSigning(message: String, signer: Signature): AuthsignalResponse<String> {
+    val msg: ByteArray = message.toByteArray(StandardCharsets.UTF_8)
+
+    return try {
+      signer.update(msg)
+
+      val signature = signer.sign()
+
+      AuthsignalResponse(data = Encoder.toBase64String(signature))
+    } catch (e: Exception) {
+      Log.e(TAG, "Signature generation failed: $e")
+
+      AuthsignalResponse(error = e.message)
+    }
+  }
 }
