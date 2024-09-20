@@ -1,6 +1,6 @@
 package com.authsignal.push.api
 
-import android.util.Log
+import com.authsignal.APIError
 import com.authsignal.Encoder
 import com.authsignal.models.AuthsignalResponse
 import com.authsignal.push.api.models.*
@@ -10,12 +10,9 @@ import io.ktor.client.call.*
 import io.ktor.client.engine.android.*
 import io.ktor.client.request.*
 import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
-
-private const val TAG = "com.authsignal.push.api"
 
 class PushAPI(tenantID: String, private val baseURL: String) {
   private val client = HttpClient(Android) {
@@ -50,9 +47,7 @@ class PushAPI(tenantID: String, private val baseURL: String) {
 
       AuthsignalResponse(data = data)
     } else {
-      val error = response.bodyAsText()
-
-      AuthsignalResponse(error = error)
+      return APIError.mapToErrorResponse(response)
     }
   }
 
@@ -81,11 +76,7 @@ class PushAPI(tenantID: String, private val baseURL: String) {
     return if (success) {
       AuthsignalResponse(data = true)
     } else {
-      val error = response.bodyAsText()
-
-      Log.e(TAG, "Add credential request error: $error")
-
-      AuthsignalResponse(error = error)
+      return APIError.mapToErrorResponse(response)
     }
   }
 
@@ -110,11 +101,7 @@ class PushAPI(tenantID: String, private val baseURL: String) {
     return if (success) {
       AuthsignalResponse(data = true)
     } else {
-      val error = response.bodyAsText()
-
-      Log.e(TAG, "Remove credential request error: $error")
-
-      AuthsignalResponse(error = error)
+      return APIError.mapToErrorResponse(response)
     }
   }
 
@@ -133,9 +120,7 @@ class PushAPI(tenantID: String, private val baseURL: String) {
 
       AuthsignalResponse(data = data)
     } else {
-      val error = response.bodyAsText()
-
-      AuthsignalResponse(error = error)
+      return APIError.mapToErrorResponse(response)
     }
   }
 
@@ -169,11 +154,7 @@ class PushAPI(tenantID: String, private val baseURL: String) {
     return if (success) {
       AuthsignalResponse(data = true)
     } else {
-      val error = response.bodyAsText()
-
-      Log.e(TAG, "Update credential request error: $error")
-
-      AuthsignalResponse(error = error)
+      return APIError.mapToErrorResponse(response)
     }
   }
 }

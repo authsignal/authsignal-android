@@ -4,7 +4,6 @@ import android.os.Build
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Log
-import androidx.annotation.RequiresApi
 import com.authsignal.Encoder
 import com.authsignal.models.AuthsignalResponse
 import java.security.InvalidAlgorithmParameterException
@@ -103,11 +102,11 @@ object KeyManager {
     } catch (e : InvalidAlgorithmParameterException){
       Log.e(TAG, "createKeyPair failed: ${e.message}")
 
-      AuthsignalResponse(error = e.message, errorType = "InvalidAlgorithmParameterException")
+      AuthsignalResponse(error = e.message, errorType = "invalid_algorithm_parameter")
     } catch (e : Exception){
       Log.e(TAG, "createKeyPair failed: ${e.message}")
 
-      AuthsignalResponse(error = e.message, errorType = "UnknownKeyGenerationException")
+      AuthsignalResponse(error = e.message, errorType = "unknown_key_generation_error")
     }
   }
 }

@@ -1,6 +1,7 @@
 package com.authsignal.passkey.api
 
 import android.util.Log
+import com.authsignal.APIError
 import com.authsignal.Encoder
 import com.authsignal.models.*
 import com.authsignal.passkey.api.models.*
@@ -96,9 +97,7 @@ class PasskeyAPI(tenantID: String, private val baseURL: String) {
 
       AuthsignalResponse(data = passkeyAuthenticatorResponse)
     } else {
-      val error = response.bodyAsText()
-
-      AuthsignalResponse(error = error)
+      return APIError.mapToErrorResponse(response)
     }
   }
 
@@ -127,9 +126,7 @@ class PasskeyAPI(tenantID: String, private val baseURL: String) {
         AuthsignalResponse(error = e.message)
       }
     } else {
-      val error = response.bodyAsText()
-      Log.e(TAG, "Passkey request error: $error")
-      AuthsignalResponse(error = error)
+      return APIError.mapToErrorResponse(response)
     }
   }
 }

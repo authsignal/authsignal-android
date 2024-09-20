@@ -1,6 +1,6 @@
 package com.authsignal.sms.api
 
-import android.util.Log
+import com.authsignal.APIError
 import com.authsignal.Encoder
 import com.authsignal.sms.api.models.*
 import com.authsignal.models.AuthsignalResponse
@@ -13,12 +13,9 @@ import io.ktor.client.call.*
 import io.ktor.client.engine.android.*
 import io.ktor.client.request.*
 import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
-
-private const val TAG = "com.authsignal.sms.api"
 
 class SMSAPI(tenantID: String, private val baseURL: String) {
   private val client = HttpClient(Android) {
@@ -81,9 +78,7 @@ class SMSAPI(tenantID: String, private val baseURL: String) {
         AuthsignalResponse(error = e.message)
       }
     } else {
-      val error = response.bodyAsText()
-      Log.e(TAG, "SMS request error: $error")
-      AuthsignalResponse(error = error)
+      return APIError.mapToErrorResponse(response)
     }
   }
 
@@ -105,9 +100,7 @@ class SMSAPI(tenantID: String, private val baseURL: String) {
         AuthsignalResponse(error = e.message)
       }
     } else {
-      val error = response.bodyAsText()
-      Log.e(TAG, "SMS request error: $error")
-      AuthsignalResponse(error = error)
+      return APIError.mapToErrorResponse(response)
     }
   }
 }
