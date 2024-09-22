@@ -5,7 +5,6 @@ import android.content.Context
 import android.util.Log
 import androidx.credentials.*
 import androidx.credentials.exceptions.*
-import androidx.credentials.exceptions.publickeycredential.CreatePublicKeyCredentialDomException
 import com.authsignal.models.AuthsignalResponse
 import com.authsignal.passkey.models.*
 import kotlinx.serialization.json.Json
@@ -33,12 +32,15 @@ class PasskeyManager(context: Context, private val activity: Activity) {
       val data = Json.decodeFromString<PasskeyRegistrationCredential>(responseJson)
 
       AuthsignalResponse(data = data)
+    } catch (e : CreateCredentialCancellationException){
+      AuthsignalResponse(
+        error = "The user canceled the passkey creation request.",
+        errorType = "user_canceled"
+      )
     } catch (e : CreateCredentialException){
-      val error = mapCreateCredentialFailure(e)
+      Log.e(TAG, "createCredential failed: ${e.message}")
 
-      Log.e(TAG, "createCredential failed: $error")
-
-      AuthsignalResponse(error = error)
+      AuthsignalResponse(error = "Unexpected exception: ${e.message}")
     }
   }
 
@@ -66,28 +68,20 @@ class PasskeyManager(context: Context, private val activity: Activity) {
       val data = Json.decodeFromString<PasskeyAuthenticationCredential>(responseJson)
 
       AuthsignalResponse(data = data)
+    } catch(e: GetCredentialCancellationException) {
+      AuthsignalResponse(
+        error = "The user canceled the passkey authentication request.",
+        errorType = "user_canceled"
+      )
+    } catch(e: NoCredentialException) {
+      AuthsignalResponse(
+        error = "No credential is available for the passkey authentication request.",
+        errorType = "no_credential"
+      )
     } catch (e : GetCredentialException){
-      val error = mapGetCredentialFailure(e)
-      val errorType = e.type
+      Log.e(TAG, "getCredential failed: ${e.message}")
 
-      Log.e(TAG, "getCredential failed: $error")
-
-      AuthsignalResponse(error = error, errorType = errorType)
-    }
-  }
-
-  private fun mapGetCredentialFailure(e: GetCredentialException): String {
-    return when (e) {
-      is GetCredentialCancellationException -> "user_cancelled_credential"
-      else -> "unexpected_exception ${e::class.java.name}"
-    }
-  }
-
-  private fun mapCreateCredentialFailure(e: CreateCredentialException): String {
-    return when (e) {
-      is CreateCredentialCancellationException -> "user_cancelled_credential"
-      is CreatePublicKeyCredentialDomException -> "dom_exception: ${e.message}"
-      else -> "unexpected_exception ${e::class.java.name}"
+      AuthsignalResponse(error = "Unexpected exception: ${e.message}")
     }
   }
 }

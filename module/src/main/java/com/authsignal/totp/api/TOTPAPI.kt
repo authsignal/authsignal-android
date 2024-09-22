@@ -1,11 +1,9 @@
 package com.authsignal.totp.api
 
-import android.util.Log
+import com.authsignal.APIError
 import com.authsignal.Encoder
 import com.authsignal.totp.api.models.*
 import com.authsignal.models.AuthsignalResponse
-import com.authsignal.models.ChallengeResponse
-import com.authsignal.models.EnrollResponse
 import com.authsignal.models.VerifyRequest
 import com.authsignal.models.VerifyResponse
 import io.ktor.client.*
@@ -13,12 +11,9 @@ import io.ktor.client.call.*
 import io.ktor.client.engine.android.*
 import io.ktor.client.request.*
 import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
-
-private const val TAG = "com.authsignal.totp.api"
 
 class TOTPAPI(tenantID: String, private val baseURL: String) {
   private val client = HttpClient(Android) {
@@ -74,9 +69,7 @@ class TOTPAPI(tenantID: String, private val baseURL: String) {
         AuthsignalResponse(error = e.message)
       }
     } else {
-      val error = response.bodyAsText()
-      Log.e(TAG, "Email request error: $error")
-      AuthsignalResponse(error = error)
+      return APIError.mapToErrorResponse(response)
     }
   }
 
@@ -98,9 +91,7 @@ class TOTPAPI(tenantID: String, private val baseURL: String) {
         AuthsignalResponse(error = e.message)
       }
     } else {
-      val error = response.bodyAsText()
-      Log.e(TAG, "Email request error: $error")
-      AuthsignalResponse(error = error)
+      return APIError.mapToErrorResponse(response)
     }
   }
 }

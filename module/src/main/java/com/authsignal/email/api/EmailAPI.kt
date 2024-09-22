@@ -1,6 +1,7 @@
 package com.authsignal.email.api
 
 import android.util.Log
+import com.authsignal.APIError
 import com.authsignal.Encoder
 import com.authsignal.email.api.models.*
 import com.authsignal.models.AuthsignalResponse
@@ -13,7 +14,6 @@ import io.ktor.client.call.*
 import io.ktor.client.engine.android.*
 import io.ktor.client.request.*
 import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
@@ -81,9 +81,7 @@ class EmailAPI(tenantID: String, private val baseURL: String) {
         AuthsignalResponse(error = e.message)
       }
     } else {
-      val error = response.bodyAsText()
-      Log.e(TAG, "Email request error: $error")
-      AuthsignalResponse(error = error)
+      return APIError.mapToErrorResponse(response)
     }
   }
 
@@ -105,9 +103,7 @@ class EmailAPI(tenantID: String, private val baseURL: String) {
         AuthsignalResponse(error = e.message)
       }
     } else {
-      val error = response.bodyAsText()
-      Log.e(TAG, "Email request error: $error")
-      AuthsignalResponse(error = error)
+      return APIError.mapToErrorResponse(response)
     }
   }
 }
