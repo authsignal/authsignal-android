@@ -4,6 +4,7 @@ import android.util.Log
 import com.authsignal.models.AuthsignalResponse
 import io.ktor.client.call.body
 import io.ktor.client.statement.HttpResponse
+import io.ktor.http.HttpStatusCode
 import kotlinx.serialization.Serializable
 
 private const val TAG = "com.authsignal"
@@ -11,6 +12,10 @@ private const val TAG = "com.authsignal"
 object APIError {
   suspend fun <T>mapToErrorResponse(response: HttpResponse): AuthsignalResponse<T> {
     return try {
+      if (response.status == HttpStatusCode.NotFound) {
+        return AuthsignalResponse(data = null, error = "API endpoint not found. Ensure your Authsignal base URL is valid.")
+      }
+
       val errorResponse = response.body<APIErrorResponse>()
 
       val errorType = errorResponse.errorCode ?: errorResponse.error
