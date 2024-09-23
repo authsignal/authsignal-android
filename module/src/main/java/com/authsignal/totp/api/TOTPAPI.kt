@@ -28,7 +28,7 @@ class TOTPAPI(tenantID: String, private val baseURL: String) {
   private val basicAuth = "Basic ${Encoder.toBase64String("$tenantID:".toByteArray())}"
 
   suspend fun enroll(token: String): AuthsignalResponse<EnrollTOTPResponse> {
-    val url = "$baseURL/client/enroll/totp"
+    val url = "$baseURL/client/user-authenticators/totp"
    
     return postRequest(url, token)
   }

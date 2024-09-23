@@ -33,7 +33,7 @@ class EmailAPI(tenantID: String, private val baseURL: String) {
   private val basicAuth = "Basic ${Encoder.toBase64String("$tenantID:".toByteArray())}"
 
   suspend fun enroll(token: String, email: String): AuthsignalResponse<EnrollResponse> {
-    val url = "$baseURL/client/enroll/email-otp"
+    val url = "$baseURL/client/user-authenticators/email-otp"
     val body = AddEmailAuthenticatorRequest(email)
 
     return postRequest(url, body, token)

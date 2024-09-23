@@ -30,7 +30,7 @@ class SMSAPI(tenantID: String, private val baseURL: String) {
   private val basicAuth = "Basic ${Encoder.toBase64String("$tenantID:".toByteArray())}"
 
   suspend fun enroll(token: String, phoneNumber: String): AuthsignalResponse<EnrollResponse> {
-    val url = "$baseURL/client/enroll/sms"
+    val url = "$baseURL/client/user-authenticators/sms"
     val body = AddSMSAuthenticatorRequest(phoneNumber)
 
     return postRequest(url, body, token)
