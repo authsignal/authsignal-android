@@ -73,11 +73,11 @@ class AuthsignalPush(
 
     val removeCredentialResponse = api.removeCredential(publicKey, signature)
 
-    removeCredentialResponse.data.let {
-      KeyManager.deleteKey()
-    }
-
-    return removeCredentialResponse
+    return AuthsignalResponse(
+      data = KeyManager.deleteKey(),
+      error = removeCredentialResponse.error,
+      errorType = removeCredentialResponse.errorType,
+    )
   }
 
   suspend fun getChallenge(): AuthsignalResponse<PushChallenge?> {
