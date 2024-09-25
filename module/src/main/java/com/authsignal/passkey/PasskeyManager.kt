@@ -15,10 +15,13 @@ private const val TAG = "com.authsignal.passkey"
 class PasskeyManager(context: Context, private val activity: Activity) {
   private val credentialManager = CredentialManager.create(context)
 
-  suspend fun register(requestJson: String): AuthsignalResponse<PasskeyRegistrationCredential> {
+  suspend fun register(
+    requestJson: String,
+    preferImmediatelyAvailableCredentials: Boolean
+  ): AuthsignalResponse<PasskeyRegistrationCredential> {
     val createPublicKeyCredentialRequest = CreatePublicKeyCredentialRequest(
       requestJson = requestJson,
-      preferImmediatelyAvailableCredentials = false,
+      preferImmediatelyAvailableCredentials = preferImmediatelyAvailableCredentials,
     )
 
     return try {
@@ -44,11 +47,13 @@ class PasskeyManager(context: Context, private val activity: Activity) {
     }
   }
 
-  suspend fun auth(requestJson: String): AuthsignalResponse<PasskeyAuthenticationCredential> {
+  suspend fun auth(
+    requestJson: String,
+    preferImmediatelyAvailableCredentials: Boolean
+  ): AuthsignalResponse<PasskeyAuthenticationCredential> {
     val getPublicKeyCredentialOption = GetPublicKeyCredentialOption(
-      requestJson,
-      null,
-      true,
+      requestJson = requestJson,
+      preferImmediatelyAvailableCredentials = preferImmediatelyAvailableCredentials,
     )
 
     val getCredentialRequest = GetCredentialRequest(
