@@ -1,6 +1,5 @@
 package com.authsignal.passkey
 
-import android.app.Activity
 import android.content.Context
 import android.util.Log
 import androidx.credentials.*
@@ -12,22 +11,22 @@ import kotlinx.serialization.decodeFromString
 
 private const val TAG = "com.authsignal.passkey"
 
-class PasskeyManager(context: Context, private val activity: Activity) {
+class PasskeyManager(private val context: Context) {
   private val credentialManager = CredentialManager.create(context)
 
   suspend fun register(
     requestJson: String,
     preferImmediatelyAvailableCredentials: Boolean
   ): AuthsignalResponse<PasskeyRegistrationCredential> {
-    val createPublicKeyCredentialRequest = CreatePublicKeyCredentialRequest(
+    val request = CreatePublicKeyCredentialRequest(
       requestJson = requestJson,
       preferImmediatelyAvailableCredentials = preferImmediatelyAvailableCredentials,
     )
 
     return try {
       val credentialResponse = credentialManager.createCredential(
-        request = createPublicKeyCredentialRequest,
-        activity = activity,
+        context = context,
+        request = request,
       ) as CreatePublicKeyCredentialResponse
 
       val responseJson = credentialResponse.registrationResponseJson
@@ -47,23 +46,15 @@ class PasskeyManager(context: Context, private val activity: Activity) {
     }
   }
 
-  suspend fun auth(
-    requestJson: String,
-    preferImmediatelyAvailableCredentials: Boolean
-  ): AuthsignalResponse<PasskeyAuthenticationCredential> {
-    val getPublicKeyCredentialOption = GetPublicKeyCredentialOption(
-      requestJson = requestJson,
-      preferImmediatelyAvailableCredentials = preferImmediatelyAvailableCredentials,
-    )
+  suspend fun auth(requestJson: String): AuthsignalResponse<PasskeyAuthenticationCredential> {
+    val credentialOption = GetPublicKeyCredentialOption(requestJson = requestJson)
 
-    val getCredentialRequest = GetCredentialRequest(
-      listOf(getPublicKeyCredentialOption)
-    )
+    val request = GetCredentialRequest(listOf(credentialOption))
 
     return try {
       val credentialResponse = credentialManager.getCredential(
-        request = getCredentialRequest,
-        activity = activity,
+        context = context,
+        request = request,
       )
 
       val publicKeyCredential = credentialResponse.credential as PublicKeyCredential
