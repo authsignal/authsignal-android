@@ -29,7 +29,8 @@ class AuthsignalPasskey(
   suspend fun signUp(
     token: String? = null,
     username: String? = null,
-    displayName: String? = null
+    displayName: String? = null,
+    preferImmediatelyAvailableCredentials: Boolean = true
   ): AuthsignalResponse<SignUpResponse> {
     val userToken = token ?: TokenCache.shared.token ?: return TokenCache.shared.handleTokenNotSetError()
 
@@ -46,7 +47,7 @@ class AuthsignalPasskey(
 
     val optionsJson = Json.encodeToString(options)
 
-    val registerResponse = manager.register(optionsJson)
+    val registerResponse = manager.register(optionsJson, preferImmediatelyAvailableCredentials)
 
     val credential = registerResponse.data ?: return AuthsignalResponse(error = registerResponse.error)
 
@@ -79,7 +80,8 @@ class AuthsignalPasskey(
 
   suspend fun signIn(
     action: String? = null,
-    token: String? = null
+    token: String? = null,
+    preferImmediatelyAvailableCredentials: Boolean = true
   ): AuthsignalResponse<SignInResponse> {
     val challengeId = action?.let {
       val challengeResponse = api.challenge(it)
@@ -93,7 +95,7 @@ class AuthsignalPasskey(
 
     val optionsJson = Json.encodeToString(optsData.options)
 
-    val authResponse = manager.auth(optionsJson)
+    val authResponse = manager.auth(optionsJson, preferImmediatelyAvailableCredentials)
 
     val credential =  authResponse.data ?: return AuthsignalResponse(
       error = authResponse.error,
@@ -168,12 +170,21 @@ class AuthsignalPasskey(
   }
 
   @OptIn(DelicateCoroutinesApi::class)
-  fun signUpAsync(token: String? = null, username: String? = null, displayName: String? = null): CompletableFuture<AuthsignalResponse<SignUpResponse>> =
-    GlobalScope.future { signUp(token, username, displayName) }
+  fun signUpAsync(
+    token: String? = null,
+    username: String? = null,
+    displayName: String? = null,
+    preferImmediatelyAvailableCredentials: Boolean = true
+  ): CompletableFuture<AuthsignalResponse<SignUpResponse>> =
+    GlobalScope.future { signUp(token, username, displayName, preferImmediatelyAvailableCredentials) }
 
   @OptIn(DelicateCoroutinesApi::class)
-  fun signInAsync(action: String? = null, token: String? = null): CompletableFuture<AuthsignalResponse<SignInResponse>> =
-    GlobalScope.future { signIn(action, token) }
+  fun signInAsync(
+    action: String? = null,
+    token: String? = null,
+    preferImmediatelyAvailableCredentials: Boolean = true
+  ): CompletableFuture<AuthsignalResponse<SignInResponse>> =
+    GlobalScope.future { signIn(action, token, preferImmediatelyAvailableCredentials) }
 
   @OptIn(DelicateCoroutinesApi::class)
   fun isAvailableOnDeviceAsync(): CompletableFuture<AuthsignalResponse<Boolean>> =
