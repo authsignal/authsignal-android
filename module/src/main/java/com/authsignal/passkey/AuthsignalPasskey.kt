@@ -18,10 +18,9 @@ class AuthsignalPasskey(
   tenantID: String,
   baseURL: String,
   context: Context,
-  activity: Activity) {
+  private val activity: Activity) {
   private val api = PasskeyAPI(tenantID, baseURL)
-  private val manager = PasskeyManager(context, activity)
-  private val activity = activity
+  private val manager = PasskeyManager(context)
   private val passkeyLocalKey = "@as_passkey_credential_id"
   private val defaultDeviceLocalKey = "@as_device_id"
   private val cache = TokenCache.shared
@@ -81,7 +80,6 @@ class AuthsignalPasskey(
   suspend fun signIn(
     action: String? = null,
     token: String? = null,
-    preferImmediatelyAvailableCredentials: Boolean = true
   ): AuthsignalResponse<SignInResponse> {
     val challengeId = action?.let {
       val challengeResponse = api.challenge(it)
@@ -95,7 +93,7 @@ class AuthsignalPasskey(
 
     val optionsJson = Json.encodeToString(optsData.options)
 
-    val authResponse = manager.auth(optionsJson, preferImmediatelyAvailableCredentials)
+    val authResponse = manager.auth(optionsJson)
 
     val credential =  authResponse.data ?: return AuthsignalResponse(
       error = authResponse.error,
@@ -182,9 +180,8 @@ class AuthsignalPasskey(
   fun signInAsync(
     action: String? = null,
     token: String? = null,
-    preferImmediatelyAvailableCredentials: Boolean = true
   ): CompletableFuture<AuthsignalResponse<SignInResponse>> =
-    GlobalScope.future { signIn(action, token, preferImmediatelyAvailableCredentials) }
+    GlobalScope.future { signIn(action, token) }
 
   @OptIn(DelicateCoroutinesApi::class)
   fun isAvailableOnDeviceAsync(): CompletableFuture<AuthsignalResponse<Boolean>> =
