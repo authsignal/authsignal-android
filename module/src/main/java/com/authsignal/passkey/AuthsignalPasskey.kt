@@ -42,6 +42,7 @@ class AuthsignalPasskey(
         requireResidentKey = false,
         userVerification = "required",
       ),
+      pubKeyCredParams = optsData.options.pubKeyCredParams.filter { it.alg != -8 },
     )
 
     val optionsJson = Json.encodeToString(options)
