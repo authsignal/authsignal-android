@@ -2,7 +2,7 @@ import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 
 plugins {
   id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
-  id("org.jetbrains.kotlin.plugin.serialization") version "1.6.21"
+  id("org.jetbrains.kotlin.plugin.serialization") version "1.9.24"
 }
 
 buildscript {
@@ -13,7 +13,7 @@ buildscript {
   }
   dependencies {
     classpath("com.android.tools.build:gradle:8.1.4")
-    classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.20")
+    classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.24")
   }
 }
 
