@@ -12,13 +12,21 @@ plugins {
 android {
   namespace = "com.authsignal"
 
-  compileSdk = 33
+  compileSdk = 34
 
   defaultConfig {
     minSdk = 23
-    targetSdk = 33
 
     consumerProguardFiles("consumer-rules.pro")
+  }
+
+  compileOptions {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+  }
+
+  kotlinOptions {
+    jvmTarget = "17"
   }
 
   buildTypes {
