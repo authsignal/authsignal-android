@@ -15,7 +15,7 @@ android {
   compileSdk = 34
 
   defaultConfig {
-    minSdk = 23
+    minSdk = 24
 
     consumerProguardFiles("consumer-rules.pro")
   }
@@ -117,6 +117,6 @@ dependencies {
   implementation("io.ktor:ktor-client-core:$ktorVersion")
   implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
   implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
-  implementation("androidx.credentials:credentials:1.0.0-alpha08")
-  implementation("androidx.credentials:credentials-play-services-auth:1.0.0-alpha08")
+  implementation("androidx.credentials:credentials:1.2.2")
+  implementation("androidx.credentials:credentials-play-services-auth:1.2.2")
 }
