@@ -38,7 +38,6 @@ class AuthsignalPasskey(
 
     val options = optsData.options.copy(
       authenticatorSelection = optsData.options.authenticatorSelection.copy(
-        requireResidentKey = false,
         userVerification = "required",
       ),
       pubKeyCredParams = optsData.options.pubKeyCredParams.filter { it.alg != -8 },

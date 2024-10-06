@@ -1,6 +1,7 @@
 package com.authsignal.passkey
 
 import android.content.Context
+import android.os.Build
 import android.util.Log
 import androidx.credentials.*
 import androidx.credentials.exceptions.*
@@ -18,6 +19,13 @@ class PasskeyManager(private val context: Context) {
     requestJson: String,
     preferImmediatelyAvailableCredentials: Boolean
   ): AuthsignalResponse<PasskeyRegistrationCredential> {
+    if (Build.VERSION.SDK_INT <= 28) {
+      return AuthsignalResponse(
+        error = "Passkey registration requires API version 28 or higher.",
+        errorType = "sdk_error"
+      )
+    }
+
     val request = CreatePublicKeyCredentialRequest(
       requestJson = requestJson,
       preferImmediatelyAvailableCredentials = preferImmediatelyAvailableCredentials,
@@ -47,10 +55,8 @@ class PasskeyManager(private val context: Context) {
   }
 
   suspend fun auth(requestJson: String): AuthsignalResponse<PasskeyAuthenticationCredential> {
-    val getPublicKeyCredentialOption = GetPublicKeyCredentialOption(requestJson = requestJson)
-
     val request = GetCredentialRequest(
-      listOf(getPublicKeyCredentialOption)
+      listOf(GetPublicKeyCredentialOption(requestJson = requestJson))
     )
 
     return try {
