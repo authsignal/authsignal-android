@@ -6,13 +6,9 @@ import com.authsignal.TokenCache
 import com.authsignal.models.AuthsignalResponse
 import com.authsignal.passkey.api.*
 import com.authsignal.passkey.models.*
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.future.future
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.util.UUID
-import java.util.concurrent.CompletableFuture
 
 class AuthsignalPasskey(
   tenantID: String,

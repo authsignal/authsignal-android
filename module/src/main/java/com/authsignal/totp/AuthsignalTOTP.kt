@@ -5,10 +5,6 @@ import com.authsignal.totp.api.TOTPAPI
 import com.authsignal.models.AuthsignalResponse
 import com.authsignal.totp.api.models.EnrollTOTPResponse
 import com.authsignal.models.VerifyResponse
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.future.future
-import java.util.concurrent.CompletableFuture
 
 class AuthsignalTOTP(
   tenantID: String,

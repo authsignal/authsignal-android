@@ -6,10 +6,6 @@ import com.authsignal.models.AuthsignalResponse
 import com.authsignal.models.ChallengeResponse
 import com.authsignal.models.EnrollResponse
 import com.authsignal.models.VerifyResponse
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.future.future
-import java.util.concurrent.CompletableFuture
 
 class AuthsignalSMS(
   tenantID: String,

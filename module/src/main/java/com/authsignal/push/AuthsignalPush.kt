@@ -6,11 +6,7 @@ import com.authsignal.models.AuthsignalResponse
 import com.authsignal.push.api.PushAPI
 import com.authsignal.push.models.PushChallenge
 import com.authsignal.push.models.PushCredential
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.future.future
 import java.security.Signature
-import java.util.concurrent.CompletableFuture
 import kotlin.math.floor
 
 class AuthsignalPush(
