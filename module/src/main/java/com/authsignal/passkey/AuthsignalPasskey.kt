@@ -6,21 +6,16 @@ import com.authsignal.TokenCache
 import com.authsignal.models.AuthsignalResponse
 import com.authsignal.passkey.api.*
 import com.authsignal.passkey.models.*
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.future.future
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.util.UUID
-import java.util.concurrent.CompletableFuture
 
 class AuthsignalPasskey(
   tenantID: String,
   baseURL: String,
-  context: Context,
   private val activity: Activity) {
   private val api = PasskeyAPI(tenantID, baseURL)
-  private val manager = PasskeyManager(context)
+  private val manager = PasskeyManager(activity)
   private val passkeyLocalKey = "@as_passkey_credential_id"
   private val defaultDeviceLocalKey = "@as_device_id"
   private val cache = TokenCache.shared
@@ -39,9 +34,9 @@ class AuthsignalPasskey(
 
     val options = optsData.options.copy(
       authenticatorSelection = optsData.options.authenticatorSelection.copy(
-        requireResidentKey = false,
         userVerification = "required",
       ),
+      pubKeyCredParams = optsData.options.pubKeyCredParams.filter { it.alg != -8 },
     )
 
     val optionsJson = Json.encodeToString(options)
@@ -166,24 +161,4 @@ class AuthsignalPasskey(
 
     return newDefaultDeviceId
   }
-
-  @OptIn(DelicateCoroutinesApi::class)
-  fun signUpAsync(
-    token: String? = null,
-    username: String? = null,
-    displayName: String? = null,
-    preferImmediatelyAvailableCredentials: Boolean = true
-  ): CompletableFuture<AuthsignalResponse<SignUpResponse>> =
-    GlobalScope.future { signUp(token, username, displayName, preferImmediatelyAvailableCredentials) }
-
-  @OptIn(DelicateCoroutinesApi::class)
-  fun signInAsync(
-    action: String? = null,
-    token: String? = null,
-  ): CompletableFuture<AuthsignalResponse<SignInResponse>> =
-    GlobalScope.future { signIn(action, token) }
-
-  @OptIn(DelicateCoroutinesApi::class)
-  fun isAvailableOnDeviceAsync(): CompletableFuture<AuthsignalResponse<Boolean>> =
-    GlobalScope.future { isAvailableOnDevice() }
 }

@@ -16,8 +16,16 @@ android {
 
   defaultConfig {
     minSdk = 23
-
     consumerProguardFiles("consumer-rules.pro")
+  }
+
+  compileOptions {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+  }
+
+  kotlinOptions {
+    jvmTarget = "17"
   }
 
   buildTypes {
@@ -103,7 +111,6 @@ signing {
 val ktorVersion: String by project
 
 dependencies {
-  implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.7.20")
   implementation("io.ktor:ktor-client-android:$ktorVersion")
   implementation("io.ktor:ktor-client-core:$ktorVersion")
   implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")

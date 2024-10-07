@@ -6,11 +6,7 @@ import com.authsignal.models.AuthsignalResponse
 import com.authsignal.push.api.PushAPI
 import com.authsignal.push.models.PushChallenge
 import com.authsignal.push.models.PushCredential
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.future.future
 import java.security.Signature
-import java.util.concurrent.CompletableFuture
 import kotlin.math.floor
 
 class AuthsignalPush(
@@ -159,36 +155,4 @@ class AuthsignalPush(
 
     return "$manufacturer $model"
   }
-
-  @OptIn(DelicateCoroutinesApi::class)
-  fun getCredentialAsync(): CompletableFuture<AuthsignalResponse<PushCredential>> =
-    GlobalScope.future { getCredential() }
-
-  @OptIn(DelicateCoroutinesApi::class)
-  fun addCredentialAsync(
-    token: String? = null,
-    deviceName: String? = null,
-  ): CompletableFuture<AuthsignalResponse<Boolean>> =
-    GlobalScope.future {
-      addCredential(
-        token,
-        deviceName,
-      )
-    }
-
-  @OptIn(DelicateCoroutinesApi::class)
-  fun removeCredentialAsync(): CompletableFuture<AuthsignalResponse<Boolean>> =
-    GlobalScope.future { removeCredential() }
-
-  @OptIn(DelicateCoroutinesApi::class)
-  fun getChallengeAsync(): CompletableFuture<AuthsignalResponse<PushChallenge?>> =
-    GlobalScope.future { getChallenge() }
-
-  @OptIn(DelicateCoroutinesApi::class)
-  fun updateChallengeAsync(
-    challengeId: String,
-    approved: Boolean,
-    verificationCode: String? = null,
-  ): CompletableFuture<AuthsignalResponse<Boolean>> =
-    GlobalScope.future { updateChallenge(challengeId, approved, verificationCode) }
 }

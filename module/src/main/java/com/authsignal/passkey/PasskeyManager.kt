@@ -1,6 +1,7 @@
 package com.authsignal.passkey
 
 import android.content.Context
+import android.os.Build
 import android.util.Log
 import androidx.credentials.*
 import androidx.credentials.exceptions.*
@@ -14,24 +15,33 @@ private const val TAG = "com.authsignal.passkey"
 class PasskeyManager(private val context: Context) {
   private val credentialManager = CredentialManager.create(context)
 
+  private val json = Json { ignoreUnknownKeys = true }
+
   suspend fun register(
     requestJson: String,
     preferImmediatelyAvailableCredentials: Boolean
   ): AuthsignalResponse<PasskeyRegistrationCredential> {
+    if (Build.VERSION.SDK_INT <= 28) {
+      return AuthsignalResponse(
+        error = "Passkey registration requires API version 28 or higher.",
+        errorType = "sdk_error"
+      )
+    }
+
     val request = CreatePublicKeyCredentialRequest(
       requestJson = requestJson,
       preferImmediatelyAvailableCredentials = preferImmediatelyAvailableCredentials,
     )
 
     return try {
-      val credentialResponse = credentialManager.createCredential(
+      val response = credentialManager.createCredential(
         context = context,
         request = request,
       ) as CreatePublicKeyCredentialResponse
 
-      val responseJson = credentialResponse.registrationResponseJson
+      val responseJson = response.registrationResponseJson
 
-      val data = Json.decodeFromString<PasskeyRegistrationCredential>(responseJson)
+      val data = json.decodeFromString<PasskeyRegistrationCredential>(responseJson)
 
       AuthsignalResponse(data = data)
     } catch (e : CreateCredentialCancellationException){
@@ -47,21 +57,21 @@ class PasskeyManager(private val context: Context) {
   }
 
   suspend fun auth(requestJson: String): AuthsignalResponse<PasskeyAuthenticationCredential> {
-    val credentialOption = GetPublicKeyCredentialOption(requestJson = requestJson)
-
-    val request = GetCredentialRequest(listOf(credentialOption))
+    val request = GetCredentialRequest(
+      listOf(GetPublicKeyCredentialOption(requestJson = requestJson))
+    )
 
     return try {
-      val credentialResponse = credentialManager.getCredential(
+      val response = credentialManager.getCredential(
         context = context,
         request = request,
       )
 
-      val publicKeyCredential = credentialResponse.credential as PublicKeyCredential
+      val publicKeyCredential = response.credential as PublicKeyCredential
 
       val responseJson = publicKeyCredential.authenticationResponseJson
 
-      val data = Json.decodeFromString<PasskeyAuthenticationCredential>(responseJson)
+      val data = json.decodeFromString<PasskeyAuthenticationCredential>(responseJson)
 
       AuthsignalResponse(data = data)
     } catch(e: GetCredentialCancellationException) {
