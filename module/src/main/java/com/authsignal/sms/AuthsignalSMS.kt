@@ -41,16 +41,4 @@ class AuthsignalSMS(
 
     return verifyResponse
   }
-
-  @OptIn(DelicateCoroutinesApi::class)
-  fun enrollAsync(phoneNumber: String): CompletableFuture<AuthsignalResponse<EnrollResponse>> =
-    GlobalScope.future { enroll(phoneNumber) }
-
-  @OptIn(DelicateCoroutinesApi::class)
-  fun challengeAsync(): CompletableFuture<AuthsignalResponse<ChallengeResponse>> =
-    GlobalScope.future { challenge() }
-
-  @OptIn(DelicateCoroutinesApi::class)
-  fun verifyAsync(code: String): CompletableFuture<AuthsignalResponse<VerifyResponse>> =
-    GlobalScope.future { verify(code) }
 }

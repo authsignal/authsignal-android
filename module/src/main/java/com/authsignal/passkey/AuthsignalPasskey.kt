@@ -165,24 +165,4 @@ class AuthsignalPasskey(
 
     return newDefaultDeviceId
   }
-
-  @OptIn(DelicateCoroutinesApi::class)
-  fun signUpAsync(
-    token: String? = null,
-    username: String? = null,
-    displayName: String? = null,
-    preferImmediatelyAvailableCredentials: Boolean = true
-  ): CompletableFuture<AuthsignalResponse<SignUpResponse>> =
-    GlobalScope.future { signUp(token, username, displayName, preferImmediatelyAvailableCredentials) }
-
-  @OptIn(DelicateCoroutinesApi::class)
-  fun signInAsync(
-    action: String? = null,
-    token: String? = null
-  ): CompletableFuture<AuthsignalResponse<SignInResponse>> =
-    GlobalScope.future { signIn(action, token) }
-
-  @OptIn(DelicateCoroutinesApi::class)
-  fun isAvailableOnDeviceAsync(): CompletableFuture<AuthsignalResponse<Boolean>> =
-    GlobalScope.future { isAvailableOnDevice() }
 }

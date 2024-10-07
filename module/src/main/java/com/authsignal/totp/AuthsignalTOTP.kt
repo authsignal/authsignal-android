@@ -34,12 +34,4 @@ class AuthsignalTOTP(
 
     return verifyResponse
   }
-
-  @OptIn(DelicateCoroutinesApi::class)
-  fun enrollAsync(): CompletableFuture<AuthsignalResponse<EnrollTOTPResponse>> =
-    GlobalScope.future { enroll() }
-
-  @OptIn(DelicateCoroutinesApi::class)
-  fun verifyAsync(code: String): CompletableFuture<AuthsignalResponse<VerifyResponse>> =
-    GlobalScope.future { verify(code) }
 }
