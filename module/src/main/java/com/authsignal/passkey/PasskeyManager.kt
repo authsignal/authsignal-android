@@ -15,6 +15,8 @@ private const val TAG = "com.authsignal.passkey"
 class PasskeyManager(private val context: Context) {
   private val credentialManager = CredentialManager.create(context)
 
+  private val json = Json { ignoreUnknownKeys = true }
+
   suspend fun register(
     requestJson: String,
     preferImmediatelyAvailableCredentials: Boolean
@@ -39,7 +41,7 @@ class PasskeyManager(private val context: Context) {
 
       val responseJson = response.registrationResponseJson
 
-      val data = Json.decodeFromString<PasskeyRegistrationCredential>(responseJson)
+      val data = json.decodeFromString<PasskeyRegistrationCredential>(responseJson)
 
       AuthsignalResponse(data = data)
     } catch (e : CreateCredentialCancellationException){
@@ -69,7 +71,7 @@ class PasskeyManager(private val context: Context) {
 
       val responseJson = publicKeyCredential.authenticationResponseJson
 
-      val data = Json.decodeFromString<PasskeyAuthenticationCredential>(responseJson)
+      val data = json.decodeFromString<PasskeyAuthenticationCredential>(responseJson)
 
       AuthsignalResponse(data = data)
     } catch(e: GetCredentialCancellationException) {
