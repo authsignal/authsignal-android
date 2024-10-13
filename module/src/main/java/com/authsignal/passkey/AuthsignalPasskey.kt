@@ -92,7 +92,7 @@ class AuthsignalPasskey(
 
     val credential =  authResponse.data ?: return AuthsignalResponse(
       error = authResponse.error,
-      errorType = authResponse.errorType,
+      errorCode = authResponse.errorCode,
     )
 
     val deviceId =  getDefaultDeviceId()

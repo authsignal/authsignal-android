@@ -18,7 +18,7 @@ object APIError {
 
       val errorResponse = response.body<APIErrorResponse>()
 
-      val errorType = errorResponse.errorCode ?: errorResponse.error
+      val errorCode = errorResponse.errorCode ?: errorResponse.error
 
       val error = if (!errorResponse.errorDescription.isNullOrEmpty())
         errorResponse.errorDescription
@@ -27,7 +27,7 @@ object APIError {
 
       Log.e(TAG, "API error: $error")
 
-      AuthsignalResponse(data = null, error = error, errorType = errorType)
+      AuthsignalResponse(data = null, error = error, errorCode = errorCode)
     } catch (e : Exception) {
       AuthsignalResponse(data = null, error = e.message)
     }
