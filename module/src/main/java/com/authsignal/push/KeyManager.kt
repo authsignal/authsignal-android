@@ -102,11 +102,11 @@ object KeyManager {
     } catch (e : InvalidAlgorithmParameterException){
       Log.e(TAG, "createKeyPair failed: ${e.message}")
 
-      AuthsignalResponse(error = e.message, errorType = "invalid_algorithm_parameter")
+      AuthsignalResponse(error = e.message, errorCode = "invalid_algorithm_parameter")
     } catch (e : Exception){
       Log.e(TAG, "createKeyPair failed: ${e.message}")
 
-      AuthsignalResponse(error = e.message, errorType = "unknown_key_generation_error")
+      AuthsignalResponse(error = e.message, errorCode = "unknown_key_generation_error")
     }
   }
 }

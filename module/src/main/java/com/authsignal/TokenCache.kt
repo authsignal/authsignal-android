@@ -14,10 +14,10 @@ class TokenCache private constructor() {
 
   fun <T>handleTokenNotSetError(): AuthsignalResponse<T> {
     val error = "A token has not been set. Call 'setToken' first."
-    val errorType = "token_not_set"
+    val errorCode = "token_not_set"
 
     Log.e(TAG, "Request error: $error")
 
-    return AuthsignalResponse(error = error, errorType = errorType)
+    return AuthsignalResponse(error = error, errorCode = errorCode)
   }
 }

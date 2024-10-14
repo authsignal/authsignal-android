@@ -41,7 +41,7 @@ class AuthsignalPush(
     val publicKey = publicKeyResponse.data ?: return AuthsignalResponse(
       data = false,
       error = publicKeyResponse.error,
-      errorType = publicKeyResponse.errorType,
+      errorCode = publicKeyResponse.errorCode,
     )
 
     val device = deviceName ?: getDeviceName()
@@ -72,7 +72,7 @@ class AuthsignalPush(
     return AuthsignalResponse(
       data = KeyManager.deleteKey(),
       error = removeCredentialResponse.error,
-      errorType = removeCredentialResponse.errorType,
+      errorCode = removeCredentialResponse.errorCode,
     )
   }
 

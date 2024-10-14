@@ -24,7 +24,7 @@ class PasskeyManager(private val context: Context) {
     if (Build.VERSION.SDK_INT <= 28) {
       return AuthsignalResponse(
         error = "Passkey registration requires API version 28 or higher.",
-        errorType = "sdk_error"
+        errorCode = "sdk_error"
       )
     }
 
@@ -47,7 +47,7 @@ class PasskeyManager(private val context: Context) {
     } catch (e : CreateCredentialCancellationException){
       AuthsignalResponse(
         error = "The user canceled the passkey creation request.",
-        errorType = "user_canceled"
+        errorCode = "user_canceled"
       )
     } catch (e : CreateCredentialException){
       Log.e(TAG, "createCredential failed: ${e.message}")
@@ -77,12 +77,12 @@ class PasskeyManager(private val context: Context) {
     } catch(e: GetCredentialCancellationException) {
       AuthsignalResponse(
         error = "The user canceled the passkey authentication request.",
-        errorType = "user_canceled"
+        errorCode = "user_canceled"
       )
     } catch(e: NoCredentialException) {
       AuthsignalResponse(
         error = "No credential is available for the passkey authentication request.",
-        errorType = "no_credential"
+        errorCode = "no_credential"
       )
     } catch (e : GetCredentialException){
       Log.e(TAG, "getCredential failed: ${e.message}")
