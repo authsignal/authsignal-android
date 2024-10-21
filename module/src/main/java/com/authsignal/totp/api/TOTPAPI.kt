@@ -48,28 +48,31 @@ class TOTPAPI(tenantID: String, private val baseURL: String) {
     body: TRequest,
     token: String? = null,
   ): AuthsignalResponse<TResponse> {
-    val response = client.post(url) {
+    return try {
+      val response = client.post(url) {
+        contentType(ContentType.Application.Json)
+        setBody(body)
 
-      contentType(ContentType.Application.Json)
-      setBody(body)
-
-      headers {
-        append(
-          HttpHeaders.Authorization,
-          if (token != null) "Bearer $token" else basicAuth,
-        )
+        headers {
+          append(
+            HttpHeaders.Authorization,
+            if (token != null) "Bearer $token" else basicAuth,
+          )
+        }
       }
-    }
 
-    return if (response.status == HttpStatusCode.OK) {
-      try {
-        val data = response.body<TResponse>()
-        AuthsignalResponse(data = data)
-      } catch (e : Exception) {
-        AuthsignalResponse(error = e.message)
+      if (response.status == HttpStatusCode.OK) {
+        try {
+          val data = response.body<TResponse>()
+          AuthsignalResponse(data = data)
+        } catch (e : Exception) {
+          AuthsignalResponse(error = e.message)
+        }
+      } else {
+        APIError.mapToErrorResponse(response)
       }
-    } else {
-      return APIError.mapToErrorResponse(response)
+    } catch (e: Exception) {
+      APIError.handleNetworkException(e)
     }
   }
 
@@ -77,21 +80,25 @@ class TOTPAPI(tenantID: String, private val baseURL: String) {
     url: String,
     token: String,
   ): AuthsignalResponse<TResponse> {
-    val response = client.post(url) {
-      headers {
-        append(HttpHeaders.Authorization, "Bearer $token")
+    return try {
+      val response = client.post(url) {
+        headers {
+          append(HttpHeaders.Authorization, "Bearer $token")
+        }
       }
-    }
 
-    return if (response.status == HttpStatusCode.OK) {
-      try {
-        val data = response.body<TResponse>()
-        AuthsignalResponse(data = data)
-      } catch (e : Exception) {
-        AuthsignalResponse(error = e.message)
+      if (response.status == HttpStatusCode.OK) {
+        try {
+          val data = response.body<TResponse>()
+          AuthsignalResponse(data = data)
+        } catch (e : Exception) {
+          AuthsignalResponse(error = e.message)
+        }
+      } else {
+        APIError.mapToErrorResponse(response)
       }
-    } else {
-      return APIError.mapToErrorResponse(response)
+    } catch (e: Exception) {
+      APIError.handleNetworkException(e)
     }
   }
 }

@@ -44,12 +44,12 @@ class PasskeyManager(private val context: Context) {
       val data = json.decodeFromString<PasskeyRegistrationCredential>(responseJson)
 
       AuthsignalResponse(data = data)
-    } catch (e : CreateCredentialCancellationException){
+    } catch (e: CreateCredentialCancellationException) {
       AuthsignalResponse(
         error = "The user canceled the passkey creation request.",
         errorCode = "user_canceled"
       )
-    } catch (e : CreateCredentialException){
+    } catch (e: CreateCredentialException) {
       Log.e(TAG, "createCredential failed: ${e.message}")
 
       AuthsignalResponse(error = "Unexpected exception: ${e.message}")
@@ -84,7 +84,7 @@ class PasskeyManager(private val context: Context) {
         error = "No credential is available for the passkey authentication request.",
         errorCode = "no_credential"
       )
-    } catch (e : GetCredentialException){
+    } catch (e : GetCredentialException) {
       Log.e(TAG, "getCredential failed: ${e.message}")
 
       AuthsignalResponse(error = "Unexpected exception: ${e.message}")

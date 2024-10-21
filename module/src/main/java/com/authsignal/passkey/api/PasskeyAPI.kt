@@ -1,6 +1,5 @@
 package com.authsignal.passkey.api
 
-import android.util.Log
 import com.authsignal.APIError
 import com.authsignal.Encoder
 import com.authsignal.models.*
@@ -11,7 +10,6 @@ import io.ktor.client.call.*
 import io.ktor.client.engine.android.*
 import io.ktor.client.request.*
 import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
@@ -86,18 +84,22 @@ class PasskeyAPI(tenantID: String, private val baseURL: String) {
   suspend fun getPasskeyAuthenticator(credentialId: String): AuthsignalResponse<PasskeyAuthenticatorResponse> {
     val url = "$baseURL/client/user-authenticators/passkey?credentialId=$credentialId"
 
-    val response = client.get(url) {
-      headers {
-        append(HttpHeaders.Authorization, basicAuth)
+    return try {
+      val response = client.get(url) {
+        headers {
+          append(HttpHeaders.Authorization, basicAuth)
+        }
       }
-    }
 
-    return if (response.status == HttpStatusCode.OK) {
-      val passkeyAuthenticatorResponse = response.body<PasskeyAuthenticatorResponse>()
+      if (response.status == HttpStatusCode.OK) {
+        val passkeyAuthenticatorResponse = response.body<PasskeyAuthenticatorResponse>()
 
-      AuthsignalResponse(data = passkeyAuthenticatorResponse)
-    } else {
-      return APIError.mapToErrorResponse(response)
+        AuthsignalResponse(data = passkeyAuthenticatorResponse)
+      } else {
+        return APIError.mapToErrorResponse(response)
+      }
+    } catch (e: Exception) {
+      APIError.handleNetworkException(e)
     }
   }
 
@@ -106,27 +108,27 @@ class PasskeyAPI(tenantID: String, private val baseURL: String) {
     body: TRequest,
     token: String? = null,
   ): AuthsignalResponse<TResponse> {
-    val response = client.post(url) {
-      contentType(ContentType.Application.Json)
-      setBody(body)
+    return try {
+      val response = client.post(url) {
+        contentType(ContentType.Application.Json)
+        setBody(body)
 
-      headers {
-        append(
-          HttpHeaders.Authorization,
-          if (token != null) "Bearer $token" else basicAuth,
-        )
+        headers {
+          append(
+            HttpHeaders.Authorization,
+            if (token != null) "Bearer $token" else basicAuth,
+          )
+        }
       }
-    }
 
-    return if (response.status == HttpStatusCode.OK) {
-      try {
+      if (response.status == HttpStatusCode.OK) {
         val data = response.body<TResponse>()
         AuthsignalResponse(data = data)
-      } catch (e : Exception) {
-        AuthsignalResponse(error = e.message)
+      } else {
+        APIError.mapToErrorResponse(response)
       }
-    } else {
-      return APIError.mapToErrorResponse(response)
+    } catch (e: Exception) {
+      APIError.handleNetworkException(e)
     }
   }
 }

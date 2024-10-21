@@ -30,24 +30,28 @@ class PushAPI(tenantID: String, private val baseURL: String) {
     val encodedKey = Encoder.toBase64String(publicKey.toByteArray())
     val url = "$baseURL/client/user-authenticators/push?publicKey=$encodedKey"
 
-    val response = client.get(url) {
-      headers {
-        append(HttpHeaders.Authorization, basicAuth)
+    return try {
+      val response = client.get(url) {
+        headers {
+          append(HttpHeaders.Authorization, basicAuth)
+        }
       }
-    }
 
-    return if (response.status == HttpStatusCode.OK) {
-      val credentialResponse = response.body<CredentialResponse>()
+      if (response.status == HttpStatusCode.OK) {
+        val credentialResponse = response.body<CredentialResponse>()
 
-      val data = PushCredential(
-        credentialResponse.userAuthenticatorId,
-        credentialResponse.verifiedAt,
-        credentialResponse.lastVerifiedAt,
-      )
+        val data = PushCredential(
+          credentialResponse.userAuthenticatorId,
+          credentialResponse.verifiedAt,
+          credentialResponse.lastVerifiedAt,
+        )
 
-      AuthsignalResponse(data = data)
-    } else {
-      return APIError.mapToErrorResponse(response)
+        AuthsignalResponse(data = data)
+      } else {
+        APIError.mapToErrorResponse(response)
+      }
+    } catch (e: Exception) {
+      APIError.handleNetworkException(e)
     }
   }
 
@@ -62,21 +66,25 @@ class PushAPI(tenantID: String, private val baseURL: String) {
       devicePlatform = "android",
     )
 
-    val response = client.post(url) {
-      contentType(ContentType.Application.Json)
-      setBody(body)
+    return try {
+      val response = client.post(url) {
+        contentType(ContentType.Application.Json)
+        setBody(body)
 
-      headers {
-        append(HttpHeaders.Authorization, "Bearer $token")
+        headers {
+          append(HttpHeaders.Authorization, "Bearer $token")
+        }
       }
-    }
 
-    val success = response.status == HttpStatusCode.OK
+      val success = response.status == HttpStatusCode.OK
 
-    return if (success) {
-      AuthsignalResponse(data = true)
-    } else {
-      return APIError.mapToErrorResponse(response)
+      if (success) {
+        AuthsignalResponse(data = true)
+      } else {
+        APIError.mapToErrorResponse(response)
+      }
+    } catch (e: Exception) {
+      APIError.handleNetworkException(e)
     }
   }
 
@@ -87,21 +95,25 @@ class PushAPI(tenantID: String, private val baseURL: String) {
     val url = "$baseURL/client/user-authenticators/push/remove"
     val body = RemoveCredentialRequest(publicKey, signature)
 
-    val response = client.post(url) {
-      contentType(ContentType.Application.Json)
-      setBody(body)
+    return try {
+      val response = client.post(url) {
+        contentType(ContentType.Application.Json)
+        setBody(body)
 
-      headers {
-        append(HttpHeaders.Authorization, basicAuth)
+        headers {
+          append(HttpHeaders.Authorization, basicAuth)
+        }
       }
-    }
 
-    val success = response.status == HttpStatusCode.OK
+      val success = response.status == HttpStatusCode.OK
 
-    return if (success) {
-      AuthsignalResponse(data = true)
-    } else {
-      return APIError.mapToErrorResponse(response)
+      return if (success) {
+        AuthsignalResponse(data = true)
+      } else {
+        APIError.mapToErrorResponse(response)
+      }
+    } catch (e: Exception) {
+      APIError.handleNetworkException(e)
     }
   }
 
@@ -109,18 +121,22 @@ class PushAPI(tenantID: String, private val baseURL: String) {
     val encodedKey = Encoder.toBase64String(publicKey.toByteArray())
     val url = "$baseURL/client/user-authenticators/push/challenge?publicKey=$encodedKey"
 
-    val response = client.get(url) {
-      headers {
-        append(HttpHeaders.Authorization, basicAuth)
+    return try {
+      val response = client.get(url) {
+        headers {
+          append(HttpHeaders.Authorization, basicAuth)
+        }
       }
-    }
 
-    return if (response.status == HttpStatusCode.OK) {
-      val data = response.body<PushChallengeResponse>()
+      if (response.status == HttpStatusCode.OK) {
+        val data = response.body<PushChallengeResponse>()
 
-      AuthsignalResponse(data = data)
-    } else {
-      return APIError.mapToErrorResponse(response)
+        AuthsignalResponse(data = data)
+      } else {
+        APIError.mapToErrorResponse(response)
+      }
+    } catch (e: Exception) {
+      APIError.handleNetworkException(e)
     }
   }
 
@@ -140,21 +156,25 @@ class PushAPI(tenantID: String, private val baseURL: String) {
       verificationCode,
     )
 
-    val response = client.post(url) {
-      contentType(ContentType.Application.Json)
-      setBody(body)
+    return try {
+      val response = client.post(url) {
+        contentType(ContentType.Application.Json)
+        setBody(body)
 
-      headers {
-        append(HttpHeaders.Authorization, basicAuth)
+        headers {
+          append(HttpHeaders.Authorization, basicAuth)
+        }
       }
-    }
 
-    val success = response.status == HttpStatusCode.OK
+      val success = response.status == HttpStatusCode.OK
 
-    return if (success) {
-      AuthsignalResponse(data = true)
-    } else {
-      return APIError.mapToErrorResponse(response)
+      if (success) {
+        AuthsignalResponse(data = true)
+      } else {
+        APIError.mapToErrorResponse(response)
+      }
+    } catch (e: Exception) {
+      APIError.handleNetworkException(e)
     }
   }
 }
