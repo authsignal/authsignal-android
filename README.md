@@ -23,22 +23,11 @@ implementation 'com.authsignal:authsignal-android:2.0.1'
 
 ## Initialization
 
-#### Passkeys
-
 ```kotlin
-import com.authsignal.passkey.AuthsignalPasskey
+import com.authsignal.Authsignal
 ...
 
-val authsignalPasskey = AuthsignalPasskey("YOUR_TENANT_ID", "YOUR_REGION_BASE_URL")
-```
-
-#### Push auth
-
-```kotlin
-import com.authsignal.push.AuthsignalPush
-...
-
-val authsignalPush = AuthsignalPush("YOUR_TENANT_ID", "YOUR_REGION_BASE_URL")
+val authsignal = Authsignal("YOUR_TENANT_ID", "YOUR_REGION_BASE_URL")
 ```
 
 You can find your tenant ID in the [Authsignal Portal](https://portal.authsignal.com/organisations/tenants/api).
@@ -53,10 +42,4 @@ You must specify the correct base URL for your tenant's region.
 
 ## Usage
 
-### Passkeys
-
-For more detailed info on how add passkeys to your app using Authsignal, check out our [official passkey documentation for Android](https://docs.authsignal.com/sdks/client/android#passkeys).
-
-### Push auth
-
-To see how to add push authentication to your app using Authsignal, see our [official push documentation for Android](https://docs.authsignal.com/sdks/client/android#push).
+For more detailed information on how to add passkeys and other MFA and passwordless authentication methods to your app using Authsignal, refer to our [Mobile SDK documentation](https://docs.authsignal.com/sdks/client/mobile).
