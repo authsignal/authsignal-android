@@ -30,7 +30,10 @@ class AuthsignalPasskey(
 
     val optsResponse = api.registrationOptions(userToken, username, displayName)
 
-    val optsData = optsResponse.data ?: return AuthsignalResponse(error = optsResponse.error)
+    val optsData = optsResponse.data ?: return AuthsignalResponse(
+      error = optsResponse.error,
+      errorCode = optsResponse.errorCode
+    )
 
     val options = optsData.options.copy(
       authenticatorSelection = optsData.options.authenticatorSelection.copy(
@@ -43,7 +46,10 @@ class AuthsignalPasskey(
 
     val registerResponse = manager.register(optionsJson, preferImmediatelyAvailableCredentials)
 
-    val credential = registerResponse.data ?: return AuthsignalResponse(error = registerResponse.error)
+    val credential = registerResponse.data ?: return AuthsignalResponse(
+      error = registerResponse.error,
+      errorCode = registerResponse.errorCode
+    )
 
     val addAuthenticatorResponse = api.addAuthenticator(
       userToken,
@@ -52,7 +58,10 @@ class AuthsignalPasskey(
     )
 
     val authenticatorData = addAuthenticatorResponse.data
-      ?: return AuthsignalResponse(error = addAuthenticatorResponse.error)
+      ?: return AuthsignalResponse(
+        error = addAuthenticatorResponse.error,
+        errorCode = registerResponse.errorCode
+      )
 
     if (authenticatorData.isVerified) {
       with (activity.getPreferences(Context.MODE_PRIVATE).edit()) {
@@ -84,7 +93,10 @@ class AuthsignalPasskey(
 
     val optsResponse = api.authenticationOptions(token, challengeId)
 
-    val optsData = optsResponse.data ?: return AuthsignalResponse(error = optsResponse.error)
+    val optsData = optsResponse.data ?: return AuthsignalResponse(
+      error = optsResponse.error,
+      errorCode = optsResponse.errorCode
+    )
 
     val optionsJson = Json.encodeToString(optsData.options)
 
@@ -105,7 +117,10 @@ class AuthsignalPasskey(
     )
 
     val verifyData = verifyResponse.data
-      ?: return AuthsignalResponse(error = verifyResponse.error)
+      ?: return AuthsignalResponse(
+        error = verifyResponse.error,
+        errorCode = verifyResponse.errorCode
+      )
 
     if (verifyData.isVerified) {
       with (activity.getPreferences(Context.MODE_PRIVATE).edit()) {

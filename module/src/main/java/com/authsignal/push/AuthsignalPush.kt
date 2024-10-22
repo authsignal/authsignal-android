@@ -18,7 +18,10 @@ class AuthsignalPush(
     val publicKeyResponse = KeyManager.getPublicKey()
 
     val publicKey = publicKeyResponse.data
-      ?: return AuthsignalResponse(error = publicKeyResponse.error)
+      ?: return AuthsignalResponse(
+        error = publicKeyResponse.error,
+        errorCode = publicKeyResponse.errorCode
+      )
 
     return api.getCredential(publicKey)
   }
@@ -65,7 +68,10 @@ class AuthsignalPush(
       Signer.sign(message, key)
     }
 
-    val signature = signatureResponse.data ?: return AuthsignalResponse(error = signatureResponse.error)
+    val signature = signatureResponse.data ?: return AuthsignalResponse(
+      error = signatureResponse.error,
+      errorCode = signatureResponse.errorCode
+    )
 
     val removeCredentialResponse = api.removeCredential(publicKey, signature)
 
@@ -80,15 +86,26 @@ class AuthsignalPush(
     val publicKeyResponse = KeyManager.getPublicKey()
 
     val publicKey = publicKeyResponse.data
-      ?: return AuthsignalResponse(error = publicKeyResponse.error)
+      ?: return AuthsignalResponse(
+        error = publicKeyResponse.error,
+        errorCode = publicKeyResponse.errorCode
+      )
 
     val pushChallengeResponse = api.getChallenge(publicKey)
 
     val pushChallengeData = pushChallengeResponse.data
-      ?: return AuthsignalResponse(data = null)
+      ?: return AuthsignalResponse(
+        data = null,
+        error = pushChallengeResponse.error,
+        errorCode = pushChallengeResponse.errorCode
+      )
 
     val challengeId = pushChallengeData.challengeId
-      ?: return AuthsignalResponse(data = null)
+      ?: return AuthsignalResponse(
+        data = null,
+        error = pushChallengeResponse.error,
+        errorCode = pushChallengeResponse.errorCode
+      )
 
     val userId = pushChallengeData.userId
       ?: return AuthsignalResponse(data = null)

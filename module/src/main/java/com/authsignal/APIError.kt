@@ -32,6 +32,13 @@ object APIError {
       AuthsignalResponse(data = null, error = e.message)
     }
   }
+
+  fun <T>handleNetworkException(e: Exception): AuthsignalResponse<T> {
+    return AuthsignalResponse(
+      error = e.message,
+      errorCode = "network_error"
+    )
+  }
 }
 
 @Serializable
