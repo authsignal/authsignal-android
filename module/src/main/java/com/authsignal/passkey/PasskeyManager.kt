@@ -56,9 +56,10 @@ class PasskeyManager(private val context: Context) {
     }
   }
 
-  suspend fun auth(requestJson: String): AuthsignalResponse<PasskeyAuthenticationCredential> {
+  suspend fun auth(requestJson: String, preferImmediatelyAvailableCredentials: Boolean): AuthsignalResponse<PasskeyAuthenticationCredential> {
     val request = GetCredentialRequest(
-      listOf(GetPublicKeyCredentialOption(requestJson = requestJson))
+      credentialOptions = listOf(GetPublicKeyCredentialOption(requestJson = requestJson)),
+      preferImmediatelyAvailableCredentials = preferImmediatelyAvailableCredentials
     )
 
     return try {
