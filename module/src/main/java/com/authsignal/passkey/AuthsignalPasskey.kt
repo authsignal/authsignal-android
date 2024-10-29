@@ -84,6 +84,7 @@ class AuthsignalPasskey(
   suspend fun signIn(
     action: String? = null,
     token: String? = null,
+    preferImmediatelyAvailableCredentials: Boolean = true
   ): AuthsignalResponse<SignInResponse> {
     val challengeId = action?.let {
       val challengeResponse = api.challenge(it)
@@ -100,7 +101,7 @@ class AuthsignalPasskey(
 
     val optionsJson = Json.encodeToString(optsData.options)
 
-    val authResponse = manager.auth(optionsJson)
+    val authResponse = manager.auth(optionsJson, preferImmediatelyAvailableCredentials)
 
     val credential =  authResponse.data ?: return AuthsignalResponse(
       error = authResponse.error,
