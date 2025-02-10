@@ -52,6 +52,7 @@ class PasskeyAPI(tenantID: String, private val baseURL: String) {
     token: String,
     challengeId: String,
     credential: PasskeyRegistrationCredential,
+    deviceId: String?,
   ): AuthsignalResponse<AddPasskeyAuthenticatorResponse> {
     val url = "$baseURL/client/user-authenticators/passkey"
     val body = AddPasskeyAuthenticatorRequest(challengeId, credential)

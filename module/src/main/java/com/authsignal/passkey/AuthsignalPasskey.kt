@@ -51,10 +51,13 @@ class AuthsignalPasskey(
       errorCode = registerResponse.errorCode
     )
 
+    val deviceId =  getDefaultDeviceId()
+
     val addAuthenticatorResponse = api.addAuthenticator(
       userToken,
       optsData.challengeId,
       credential,
+      deviceId,
     )
 
     val authenticatorData = addAuthenticatorResponse.data

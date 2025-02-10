@@ -7,4 +7,5 @@ import kotlinx.serialization.Serializable
 data class AddPasskeyAuthenticatorRequest(
   val challengeId: String,
   val registrationCredential: PasskeyRegistrationCredential,
+  val deviceId: String? = null,
 )
