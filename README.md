@@ -1,3 +1,5 @@
+<img width="1070" alt="Authsignal" src="https://raw.githubusercontent.com/authsignal/authsignal-android/main/.github/images/authsignal.png">
+
 # Authsignal Android
 
 Check out our [official Android documentation](https://docs.authsignal.com/sdks/client/android).
