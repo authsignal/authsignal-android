@@ -6,6 +6,7 @@ import com.authsignal.passkey.AuthsignalPasskey
 import com.authsignal.push.AuthsignalPush
 import com.authsignal.sms.AuthsignalSMS
 import com.authsignal.totp.AuthsignalTOTP
+import com.authsignal.device.AuthsignalDevice
 
 class Authsignal(
   tenantID: String,
@@ -14,6 +15,7 @@ class Authsignal(
 ) {
   val passkey = AuthsignalPasskey(tenantID = tenantID, baseURL = baseURL, activity = activity)
   val push = AuthsignalPush(tenantID = tenantID, baseURL = baseURL)
+  val device = AuthsignalDevice(tenantID = tenantID, baseURL = baseURL)
   val email = AuthsignalEmail(tenantID = tenantID, baseURL = baseURL)
   val sms = AuthsignalSMS(tenantID = tenantID, baseURL = baseURL)
   val totp = AuthsignalTOTP(tenantID = tenantID, baseURL = baseURL)
