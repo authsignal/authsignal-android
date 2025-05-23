@@ -19,3 +19,17 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Keep Kotlinx Serialization classes
+-keep class kotlinx.serialization.** { *; }
+
+# Keep @Serializable classes and their generated serializers
+-keepclassmembers class ** {
+    @kotlinx.serialization.Serializable *;
+}
+
+# Keep your data classes and their serializers (adjust the package if needed)
+-keep class com.authsignal.** { *; }
+-keepclassmembers class com.authsignal.** {
+    @kotlinx.serialization.Serializable *;
+}
