@@ -123,6 +123,28 @@ class AuthsignalDevice(
     return AuthsignalResponse(data = deviceChallenge)
   }
 
+  suspend fun claimChallenge(
+    challengeId: String,
+    signer: Signature? = null
+  ): AuthsignalResponse<Boolean> {
+    val keyResponse = KeyManager.getKey()
+
+    val key = keyResponse.data
+      ?: return AuthsignalResponse(error = keyResponse.error)
+
+    val signatureResponse = if (signer != null) {
+      Signer.finishSigning(challengeId, signer)
+    } else {
+      Signer.sign(challengeId, key)
+    }
+
+    val signature = signatureResponse.data ?: return AuthsignalResponse(error = signatureResponse.error)
+
+    val publicKey = KeyManager.derivePublicKey(key)
+
+    return api.claimChallenge(challengeId, publicKey, signature)
+  }
+
   suspend fun updateChallenge(
     challengeId: String,
     approved: Boolean,

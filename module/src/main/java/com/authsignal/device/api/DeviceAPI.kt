@@ -140,6 +140,40 @@ class DeviceAPI(tenantID: String, private val baseURL: String) {
     }
   }
 
+suspend fun claimChallenge(
+    challengeId: String,
+    publicKey: String,
+    signature: String,
+  ): AuthsignalResponse<Boolean> {
+    val url = "$baseURL/client/user-authenticators/device/challenge/claim"
+    val body = ClaimChallengeRequest(
+      publicKey,
+      challengeId,
+      signature,
+    )
+
+    return try {
+      val response = client.post(url) {
+        contentType(ContentType.Application.Json)
+        setBody(body)
+
+        headers {
+          append(HttpHeaders.Authorization, basicAuth)
+        }
+      }
+
+      val success = response.status == HttpStatusCode.OK
+
+      if (success) {
+        AuthsignalResponse(data = true)
+      } else {
+        APIError.mapToErrorResponse(response)
+      }
+    } catch (e: Exception) {
+      APIError.handleNetworkException(e)
+    }
+  }
+
   suspend fun updateChallenge(
     challengeId: String,
     publicKey: String,
