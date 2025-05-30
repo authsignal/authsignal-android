@@ -4,6 +4,7 @@ import android.os.Build
 import com.authsignal.TokenCache
 import com.authsignal.models.AuthsignalResponse
 import com.authsignal.device.api.DeviceAPI
+import com.authsignal.device.api.models.ClaimChallengeResponse
 import com.authsignal.device.models.DeviceChallenge
 import com.authsignal.device.models.DeviceCredential
 import java.security.Signature
@@ -126,7 +127,7 @@ class AuthsignalDevice(
   suspend fun claimChallenge(
     challengeId: String,
     signer: Signature? = null
-  ): AuthsignalResponse<Boolean> {
+  ): AuthsignalResponse<ClaimChallengeResponse> {
     val keyResponse = KeyManager.getKey()
 
     val key = keyResponse.data
