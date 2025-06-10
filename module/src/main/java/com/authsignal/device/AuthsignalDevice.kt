@@ -5,6 +5,7 @@ import com.authsignal.TokenCache
 import com.authsignal.models.AuthsignalResponse
 import com.authsignal.device.api.DeviceAPI
 import com.authsignal.device.api.models.ClaimChallengeResponse
+import com.authsignal.device.api.models.VerifyDeviceResponse
 import com.authsignal.device.models.DeviceChallenge
 import com.authsignal.device.models.DeviceCredential
 import java.security.Signature
@@ -168,6 +169,26 @@ class AuthsignalDevice(
     val publicKey = KeyManager.derivePublicKey(key)
 
     return api.updateChallenge(challengeId, publicKey, signature, approved, verificationCode)
+  }
+
+  suspend fun verify(): AuthsignalResponse<VerifyDeviceResponse> {
+    val challengeResponse = api.challenge()
+
+    val challengeId = challengeResponse.data?.challengeId
+      ?: return AuthsignalResponse(error = challengeResponse.error)
+
+    val keyResponse = KeyManager.getKey()
+
+    val key = keyResponse.data
+      ?: return AuthsignalResponse(error = keyResponse.error)
+
+    val signatureResponse = Signer.sign(challengeId, key)
+
+    val signature = signatureResponse.data ?: return AuthsignalResponse(error = signatureResponse.error)
+
+    val publicKey = KeyManager.derivePublicKey(key)
+
+    return api.verify(challengeId, publicKey, signature)
   }
 
   fun startSigning(): Signature? {

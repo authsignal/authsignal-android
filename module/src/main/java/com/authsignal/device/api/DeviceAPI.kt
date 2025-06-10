@@ -5,6 +5,8 @@ import com.authsignal.Encoder
 import com.authsignal.models.AuthsignalResponse
 import com.authsignal.device.api.models.*
 import com.authsignal.device.models.DeviceCredential
+import com.authsignal.models.ChallengeResponse
+import com.authsignal.passkey.api.models.ChallengeRequest
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.android.*
@@ -25,6 +27,28 @@ class DeviceAPI(tenantID: String, private val baseURL: String) {
   }
 
   private val basicAuth = "Basic ${Encoder.toBase64String("$tenantID:".toByteArray())}"
+
+  suspend fun challenge(): AuthsignalResponse<ChallengeResponse> {
+    val url = "$baseURL/client/challenge"
+
+    return try {
+      val response = client.post(url) {
+        headers {
+          append(HttpHeaders.Authorization, basicAuth)
+        }
+      }
+
+      if (response.status == HttpStatusCode.OK) {
+        val data = response.body<ChallengeResponse>()
+
+        AuthsignalResponse(data = data)
+      } else {
+        APIError.mapToErrorResponse(response)
+      }
+    } catch (e: Exception) {
+      APIError.handleNetworkException(e)
+    }
+  }
 
   suspend fun getCredential(publicKey: String): AuthsignalResponse<DeviceCredential> {
     val encodedKey = Encoder.toBase64String(publicKey.toByteArray())
@@ -203,6 +227,41 @@ class DeviceAPI(tenantID: String, private val baseURL: String) {
 
       if (success) {
         AuthsignalResponse(data = true)
+      } else {
+        APIError.mapToErrorResponse(response)
+      }
+    } catch (e: Exception) {
+      APIError.handleNetworkException(e)
+    }
+  }
+
+  suspend fun verify(
+    challengeId: String,
+    publicKey: String,
+    signature: String,
+  ): AuthsignalResponse<VerifyDeviceResponse> {
+    val url = "$baseURL/client/verify/device"
+    val body = VerifyDeviceRequest(
+      challengeId,
+      publicKey,
+      signature,
+    )
+
+    return try {
+      val response = client.post(url) {
+        contentType(ContentType.Application.Json)
+        setBody(body)
+
+        headers {
+          append(HttpHeaders.Authorization, basicAuth)
+        }
+      }
+
+      val success = response.status == HttpStatusCode.OK
+
+      if (success) {
+        val data = response.body<VerifyDeviceResponse>()
+        AuthsignalResponse(data = data)
       } else {
         APIError.mapToErrorResponse(response)
       }
