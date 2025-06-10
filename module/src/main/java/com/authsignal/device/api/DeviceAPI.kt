@@ -6,7 +6,6 @@ import com.authsignal.models.AuthsignalResponse
 import com.authsignal.device.api.models.*
 import com.authsignal.device.models.DeviceCredential
 import com.authsignal.models.ChallengeResponse
-import com.authsignal.passkey.api.models.ChallengeRequest
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.android.*
