@@ -43,7 +43,7 @@ object KeyManager {
     return try {
       val keyStore = KeyStore.getInstance("AndroidKeyStore")
       keyStore.load(null)
-      val entry = keyStore.getEntry(keyName, null) as? KeyStore.PrivateKeyEntry
+      val entry = keyStore.getEntry(keyName, null) as KeyStore.PrivateKeyEntry?
       AuthsignalResponse(data = entry)
     } catch (e: Exception) {
       AuthsignalResponse(error = e.message)
