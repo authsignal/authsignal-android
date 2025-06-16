@@ -66,6 +66,7 @@ class DeviceAPI(tenantID: String, private val baseURL: String) {
         val data = DeviceCredential(
           credentialResponse.userAuthenticatorId,
           credentialResponse.verifiedAt,
+          credentialResponse.userId,
           credentialResponse.lastVerifiedAt,
         )
 
@@ -81,7 +82,7 @@ class DeviceAPI(tenantID: String, private val baseURL: String) {
   suspend fun addCredential(
     token: String,
     publicKey: String,
-    deviceName: String = ""): AuthsignalResponse<Boolean> {
+    deviceName: String = ""): AuthsignalResponse<DeviceCredential> {
     val url = "$baseURL/client/user-authenticators/device"
     val body = AddCredentialRequest(
       publicKey,
@@ -99,10 +100,16 @@ class DeviceAPI(tenantID: String, private val baseURL: String) {
         }
       }
 
-      val success = response.status == HttpStatusCode.OK
+      if (response.status == HttpStatusCode.OK) {
+        val credentialResponse = response.body<CredentialResponse>()
 
-      if (success) {
-        AuthsignalResponse(data = true)
+        val data = DeviceCredential(
+          credentialResponse.userAuthenticatorId,
+          credentialResponse.verifiedAt,
+          credentialResponse.userId,
+        )
+
+        AuthsignalResponse(data = data)
       } else {
         APIError.mapToErrorResponse(response)
       }
