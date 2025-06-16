@@ -34,7 +34,7 @@ class AuthsignalDevice(
     userAuthenticationRequired: Boolean = false,
     timeout: Int = 0,
     authorizationType: Int = 0,
-  ): AuthsignalResponse<Boolean> {
+  ): AuthsignalResponse<DeviceCredential> {
     val userToken = token ?: TokenCache.shared.token ?: return TokenCache.shared.handleTokenNotSetError()
 
     val publicKeyResponse = KeyManager.getOrCreatePublicKey(
@@ -44,7 +44,6 @@ class AuthsignalDevice(
     )
 
     val publicKey = publicKeyResponse.data ?: return AuthsignalResponse(
-      data = false,
       error = publicKeyResponse.error,
       errorCode = publicKeyResponse.errorCode,
     )
