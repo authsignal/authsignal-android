@@ -245,6 +245,7 @@ class DeviceAPI(tenantID: String, private val baseURL: String) {
     challengeId: String,
     publicKey: String,
     signature: String,
+    token: String?
   ): AuthsignalResponse<VerifyDeviceResponse> {
     val url = "$baseURL/client/verify/device"
     val body = VerifyDeviceRequest(
@@ -259,7 +260,10 @@ class DeviceAPI(tenantID: String, private val baseURL: String) {
         setBody(body)
 
         headers {
-          append(HttpHeaders.Authorization, basicAuth)
+          append(
+            HttpHeaders.Authorization,
+            if (token != null) "Bearer $token" else basicAuth,
+          )
         }
       }
 

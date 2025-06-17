@@ -15,6 +15,7 @@ class AuthsignalDevice(
   tenantID: String,
   baseURL: String) {
   private val api = DeviceAPI(tenantID, baseURL)
+  private val cache = TokenCache.shared
 
   suspend fun getCredential(): AuthsignalResponse<DeviceCredential> {
     val publicKeyResponse = KeyManager.getPublicKey()
@@ -187,7 +188,7 @@ class AuthsignalDevice(
 
     val publicKey = KeyManager.derivePublicKey(key)
 
-    return api.verify(challengeId, publicKey, signature)
+    return api.verify(challengeId, publicKey, signature, cache.token)
   }
 
   fun startSigning(): Signature? {
