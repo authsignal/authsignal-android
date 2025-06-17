@@ -26,7 +26,7 @@ class AuthsignalPasskey(
     displayName: String? = null,
     preferImmediatelyAvailableCredentials: Boolean = true
   ): AuthsignalResponse<SignUpResponse> {
-    val userToken = token ?: TokenCache.shared.token ?: return TokenCache.shared.handleTokenNotSetError()
+    val userToken = token ?: cache.token ?: return cache.handleTokenNotSetError()
 
     val optsResponse = api.registrationOptions(userToken, username, displayName)
 
@@ -89,13 +89,15 @@ class AuthsignalPasskey(
     token: String? = null,
     preferImmediatelyAvailableCredentials: Boolean = true
   ): AuthsignalResponse<SignInResponse> {
+    val userToken = token ?: cache.token;
+
     val challengeId = action?.let {
       val challengeResponse = api.challenge(it)
 
       challengeResponse.data?.challengeId
     }
 
-    val optsResponse = api.authenticationOptions(token, challengeId)
+    val optsResponse = api.authenticationOptions(userToken, challengeId)
 
     val optsData = optsResponse.data ?: return AuthsignalResponse(
       error = optsResponse.error,
@@ -116,7 +118,7 @@ class AuthsignalPasskey(
     val verifyResponse = api.verify(
       optsData.challengeId,
       credential,
-      token,
+      userToken,
       deviceId,
     )
 
