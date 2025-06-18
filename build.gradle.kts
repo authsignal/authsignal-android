@@ -24,16 +24,18 @@ allprojects {
   }
 }
 
+fun getProperty(propertyName: String, gradleLocalPropertyName: String = propertyName): String {
+  return System.getenv(propertyName) ?: gradleLocalProperties(rootDir).getProperty(gradleLocalPropertyName) ?: ""
+}
+
 nexusPublishing {
   repositories {
     sonatype {
-      val properties = gradleLocalProperties(rootDir)
-
-      username.set(properties.getProperty("ossrhUsername"))
-      password.set(properties.getProperty("ossrhPassword"))
-      stagingProfileId.set(properties.getProperty("sonatypeStagingProfileId"))
-      nexusUrl.set(uri(properties.getProperty("nexusUrl")))
-      snapshotRepositoryUrl.set(uri(properties.getProperty("snapshotRepositoryUrl")))
+      username.set(getProperty("OSSRH_USERNAME", "ossrhUsername"))
+      password.set(getProperty("OSSRH_PASSWORD", "ossrhPassword"))
+      stagingProfileId.set(getProperty("SONATYPE_STAGING_PROFILE_ID", "sonatypeStagingProfileId"))
+      nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+      snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
     }
   }
 }

@@ -1,4 +1,5 @@
 import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
+import org.gradle.api.GradleException
 
 plugins {
   id("com.android.library")
@@ -7,6 +8,7 @@ plugins {
 
   `maven-publish`
   signing
+  id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
 }
 
 android {
@@ -37,6 +39,10 @@ android {
       )
     }
   }
+}
+
+fun getProperty(propertyName: String, gradleLocalPropertyName: String = propertyName): String {
+  return System.getenv(propertyName) ?: gradleLocalProperties(rootDir).getProperty(gradleLocalPropertyName) ?: ""
 }
 
 val sourcesJar by tasks.creating(Jar::class) {
@@ -94,18 +100,33 @@ publishing {
       }
     }
   }
+
+  repositories {
+    maven {
+      name = "sonatype"
+      val releasesRepoUrl = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+      val snapshotsRepoUrl = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+      url = if (versionName.endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl
+      
+      credentials {
+        username = getProperty("OSSRH_USERNAME")
+        password = getProperty("OSSRH_PASSWORD")
+      }
+    }
+  }
 }
 
 signing {
-  val properties = gradleLocalProperties(rootDir)
-
-  useInMemoryPgpKeys(
-    properties.getProperty("signing.keyId"),
-    properties.getProperty("signing.key"),
-    properties.getProperty("signing.password"),
-  )
-
-  sign(publishing.publications)
+  val signingKeyId = getProperty("SIGNING_KEY_ID", "signing.keyId")
+  val signingKey = getProperty("SIGNING_KEY", "signing.key")
+  val signingPassword = getProperty("SIGNING_PASSWORD", "signing.password")
+  
+  if (signingKeyId.isNotEmpty() && signingKey.isNotEmpty() && signingPassword.isNotEmpty()) {
+    useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
+    sign(publishing.publications)
+  } else {
+    throw GradleException("Signing information incomplete. Publishing requires valid signing configuration.")
+  }
 }
 
 val ktorVersion: String by project
