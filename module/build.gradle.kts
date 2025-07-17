@@ -115,7 +115,7 @@ jreleaser {
         java {
             groupId.set("com.authsignal")
             artifactId.set("authsignal-android")
-            description.set("The official Authsignal SDK for Android.")
+            description.set("Authsignal SDK for Android")
         }
     }
     gitRootSearch = true

@@ -23,4 +23,8 @@ class Authsignal(
   fun setToken(token: String) {
     TokenCache.shared.token = token
   }
+
+  fun clearToken() {
+    TokenCache.shared.token = null
+  }
 }
