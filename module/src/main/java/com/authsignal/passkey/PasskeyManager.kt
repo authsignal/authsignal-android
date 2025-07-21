@@ -12,8 +12,12 @@ import kotlinx.serialization.decodeFromString
 
 private const val TAG = "com.authsignal.passkey"
 
-class PasskeyManager(private val context: Context) {
-  private val credentialManager = CredentialManager.create(context)
+class PasskeyManager(private val context: Context?) {
+  private val credentialManager: CredentialManager? =
+    if (context != null)
+      CredentialManager.create(context)
+    else
+      null
 
   private val json = Json { ignoreUnknownKeys = true }
 
@@ -21,6 +25,10 @@ class PasskeyManager(private val context: Context) {
     requestJson: String,
     preferImmediatelyAvailableCredentials: Boolean
   ): AuthsignalResponse<PasskeyRegistrationCredential> {
+    if (context == null || credentialManager == null) {
+      return PasskeySdkErrors.contextError()
+    }
+
     if (Build.VERSION.SDK_INT <= 28) {
       return AuthsignalResponse(
         error = "Passkey registration requires API version 28 or higher.",
@@ -57,6 +65,10 @@ class PasskeyManager(private val context: Context) {
   }
 
   suspend fun auth(requestJson: String, preferImmediatelyAvailableCredentials: Boolean): AuthsignalResponse<PasskeyAuthenticationCredential> {
+    if (context == null || credentialManager == null) {
+      return PasskeySdkErrors.contextError()
+    }
+
     val request = GetCredentialRequest(
       credentialOptions = listOf(GetPublicKeyCredentialOption(requestJson = requestJson)),
       preferImmediatelyAvailableCredentials = preferImmediatelyAvailableCredentials

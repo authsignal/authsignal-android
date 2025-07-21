@@ -11,7 +11,7 @@ import com.authsignal.device.AuthsignalDevice
 class Authsignal(
   tenantID: String,
   baseURL: String,
-  activity: Activity
+  activity: Activity? = null
 ) {
   val passkey = AuthsignalPasskey(tenantID = tenantID, baseURL = baseURL, activity = activity)
   val push = AuthsignalPush(tenantID = tenantID, baseURL = baseURL)
