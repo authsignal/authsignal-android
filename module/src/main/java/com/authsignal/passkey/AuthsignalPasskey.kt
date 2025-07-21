@@ -13,7 +13,7 @@ import java.util.UUID
 class AuthsignalPasskey(
   tenantID: String,
   baseURL: String,
-  private val activity: Activity) {
+  private val activity: Activity?) {
   private val api = PasskeyAPI(tenantID, baseURL)
   private val manager = PasskeyManager(activity)
   private val passkeyLocalKey = "@as_passkey_credential_id"
@@ -27,6 +27,10 @@ class AuthsignalPasskey(
     preferImmediatelyAvailableCredentials: Boolean = true
   ): AuthsignalResponse<SignUpResponse> {
     val userToken = token ?: cache.token ?: return cache.handleTokenNotSetError()
+
+    if (activity == null) {
+      return PasskeySdkErrors.contextError()
+    }
 
     val optsResponse = api.registrationOptions(userToken, username, displayName)
 
@@ -91,6 +95,10 @@ class AuthsignalPasskey(
   ): AuthsignalResponse<SignInResponse> {
     val userToken = token ?: cache.token;
 
+    if (activity == null) {
+      return PasskeySdkErrors.contextError()
+    }
+
     val challengeId = action?.let {
       val challengeResponse = api.challenge(it)
 
@@ -152,6 +160,10 @@ class AuthsignalPasskey(
   }
 
   suspend fun isAvailableOnDevice(): AuthsignalResponse<Boolean> {
+    if (activity == null) {
+      return PasskeySdkErrors.contextError()
+    }
+
     val preferences = activity.getPreferences(Context.MODE_PRIVATE)
     val credentialId = preferences.getString(passkeyLocalKey, null)
       ?: return AuthsignalResponse(data = false)
@@ -166,6 +178,10 @@ class AuthsignalPasskey(
   }
 
   private fun getDefaultDeviceId(): String {
+    if (activity == null) {
+      return "";
+    }
+
     val preferences = activity.getPreferences(Context.MODE_PRIVATE)
     val defaultDeviceId = preferences.getString(defaultDeviceLocalKey, null)
 
