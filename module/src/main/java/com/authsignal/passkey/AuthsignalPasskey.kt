@@ -93,7 +93,7 @@ class AuthsignalPasskey(
     token: String? = null,
     preferImmediatelyAvailableCredentials: Boolean = true
   ): AuthsignalResponse<SignInResponse> {
-    val userToken = token ?: cache.token;
+    val userToken = if (action == null) token ?: cache.token else null
 
     if (activity == null) {
       return PasskeySdkErrors.contextError()
