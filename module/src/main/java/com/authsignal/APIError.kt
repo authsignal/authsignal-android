@@ -12,9 +12,6 @@ private const val TAG = "com.authsignal"
 object APIError {
   suspend fun <T>mapToErrorResponse(response: HttpResponse): AuthsignalResponse<T> {
     return try {
-      if (response.status == HttpStatusCode.NotFound) {
-        return AuthsignalResponse(data = null, error = "API endpoint not found. Ensure your Authsignal base URL is valid.")
-      }
 
       val errorResponse = response.body<APIErrorResponse>()
 
@@ -26,6 +23,10 @@ object APIError {
         errorResponse.error
 
       Log.e(TAG, "API error: $error")
+
+      if (response.status == HttpStatusCode.NotFound && error.isNullOrEmpty()) {
+        return AuthsignalResponse(data = null, error = "API endpoint not found. Ensure your Authsignal base URL is valid.")
+      }
 
       AuthsignalResponse(data = null, error = error, errorCode = errorCode)
     } catch (e : Exception) {
