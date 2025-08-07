@@ -11,9 +11,10 @@ import com.authsignal.device.AuthsignalDevice
 class Authsignal(
   tenantID: String,
   baseURL: String,
-  activity: Activity? = null
+  activity: Activity? = null,
+  deviceId: String? = null,
 ) {
-  val passkey = AuthsignalPasskey(tenantID = tenantID, baseURL = baseURL, activity = activity)
+  val passkey = AuthsignalPasskey(tenantID = tenantID, baseURL = baseURL, activity = activity, deviceId = deviceId)
   val push = AuthsignalPush(tenantID = tenantID, baseURL = baseURL)
   val device = AuthsignalDevice(tenantID = tenantID, baseURL = baseURL)
   val email = AuthsignalEmail(tenantID = tenantID, baseURL = baseURL)

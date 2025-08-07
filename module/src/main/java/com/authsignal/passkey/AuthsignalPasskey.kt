@@ -13,7 +13,8 @@ import java.util.UUID
 class AuthsignalPasskey(
   tenantID: String,
   baseURL: String,
-  private val activity: Activity?) {
+  private val activity: Activity?,
+  private val deviceId: String?) {
   private val api = PasskeyAPI(tenantID, baseURL)
   private val manager = PasskeyManager(activity)
   private val passkeyLocalKey = "@as_passkey_credential_id"
@@ -55,7 +56,7 @@ class AuthsignalPasskey(
       errorCode = registerResponse.errorCode
     )
 
-    val deviceId =  getDefaultDeviceId()
+    val deviceId = deviceId ?: getDefaultDeviceId()
 
     val addAuthenticatorResponse = api.addAuthenticator(
       userToken,
@@ -121,7 +122,7 @@ class AuthsignalPasskey(
       errorCode = authResponse.errorCode,
     )
 
-    val deviceId =  getDefaultDeviceId()
+    val deviceId =  deviceId ?: getDefaultDeviceId()
 
     val verifyResponse = api.verify(
       optsData.challengeId,
