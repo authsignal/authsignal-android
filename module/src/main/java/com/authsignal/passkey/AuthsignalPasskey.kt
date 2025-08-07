@@ -193,7 +193,7 @@ class AuthsignalPasskey(
     val newDefaultDeviceId = UUID.randomUUID().toString()
 
     with (activity.getPreferences(Context.MODE_PRIVATE).edit()) {
-      putString(passkeyLocalKey, newDefaultDeviceId)
+      putString(defaultDeviceLocalKey, newDefaultDeviceId)
       apply()
     }
 
