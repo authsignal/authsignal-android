@@ -2,13 +2,24 @@ package com.authsignal.passkey
 
 import android.app.Activity
 import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
 import com.authsignal.TokenCache
 import com.authsignal.models.AuthsignalResponse
 import com.authsignal.passkey.api.*
 import com.authsignal.passkey.models.*
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.util.UUID
+
+private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
+private val passkeyCredentialIdPreferencesKey = stringPreferencesKey("@as_passkey_credential_id")
+private val defaultDeviceIdPreferencesKey = stringPreferencesKey("@as_device_id")
 
 class AuthsignalPasskey(
   tenantID: String,
@@ -17,9 +28,8 @@ class AuthsignalPasskey(
   private val deviceId: String?) {
   private val api = PasskeyAPI(tenantID, baseURL)
   private val manager = PasskeyManager(activity)
-  private val passkeyLocalKey = "@as_passkey_credential_id"
-  private val defaultDeviceLocalKey = "@as_device_id"
   private val cache = TokenCache.shared
+  private val dataStore = activity?.applicationContext?.dataStore
 
   suspend fun signUp(
     token: String? = null,
@@ -72,9 +82,8 @@ class AuthsignalPasskey(
       )
 
     if (authenticatorData.isVerified) {
-      with (activity.getPreferences(Context.MODE_PRIVATE).edit()) {
-        putString(passkeyLocalKey, credential.rawId)
-        apply()
+      dataStore?.edit { settings ->
+        settings[passkeyCredentialIdPreferencesKey] = credential.rawId
       }
     }
 
@@ -138,9 +147,8 @@ class AuthsignalPasskey(
       )
 
     if (verifyData.isVerified) {
-      with (activity.getPreferences(Context.MODE_PRIVATE).edit()) {
-        putString(passkeyLocalKey, credential.rawId)
-        apply()
+      dataStore?.edit { settings ->
+        settings[passkeyCredentialIdPreferencesKey] = credential.rawId
       }
     }
 
@@ -161,42 +169,33 @@ class AuthsignalPasskey(
   }
 
   suspend fun isAvailableOnDevice(): AuthsignalResponse<Boolean> {
-    if (activity == null) {
-      return PasskeySdkErrors.contextError()
-    }
+    val hasPasskeyCredentialAvailable = dataStore?.data
+      ?.map { preferences ->
+        preferences[passkeyCredentialIdPreferencesKey]
+      }?.map { credentialId ->
+        credentialId?.let {
+          try {
+            api.getPasskeyAuthenticator(it).error == null
+          } catch (e: Exception) {
+            false
+          }
+        } ?: false
+      }?.first() ?: false
 
-    val preferences = activity.getPreferences(Context.MODE_PRIVATE)
-    val credentialId = preferences.getString(passkeyLocalKey, null)
-      ?: return AuthsignalResponse(data = false)
-
-    val passkeyAuthenticatorResponse = api.getPasskeyAuthenticator(credentialId)
-
-    return if (passkeyAuthenticatorResponse.error != null) {
-      AuthsignalResponse(data = false, error = passkeyAuthenticatorResponse.error)
-    } else {
-      AuthsignalResponse(data = true)
-    }
+    return AuthsignalResponse(data = hasPasskeyCredentialAvailable)
   }
 
-  private fun getDefaultDeviceId(): String {
-    if (activity == null) {
-      return "";
+  private suspend fun getDefaultDeviceId(): String {
+    val store = dataStore ?: return ""
+
+    val defaultDeviceId = store.data
+      .map { preferences -> preferences[defaultDeviceIdPreferencesKey] }
+      .first()
+
+    return defaultDeviceId ?: UUID.randomUUID().toString().also { newId ->
+      store.edit { preferences ->
+        preferences[defaultDeviceIdPreferencesKey] = newId
+      }
     }
-
-    val preferences = activity.getPreferences(Context.MODE_PRIVATE)
-    val defaultDeviceId = preferences.getString(defaultDeviceLocalKey, null)
-
-    if (defaultDeviceId != null) {
-      return defaultDeviceId
-    }
-
-    val newDefaultDeviceId = UUID.randomUUID().toString()
-
-    with (activity.getPreferences(Context.MODE_PRIVATE).edit()) {
-      putString(defaultDeviceLocalKey, newDefaultDeviceId)
-      apply()
-    }
-
-    return newDefaultDeviceId
   }
 }

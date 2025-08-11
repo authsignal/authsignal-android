@@ -9,8 +9,8 @@ buildscript {
         maven { url = uri("https://repo.gradle.org/gradle/libs-releases") }
     }
     dependencies {
-        classpath("com.android.tools.build:gradle:8.1.4")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.20")
+        classpath("com.android.tools.build:gradle:8.7.3")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.21")
     }
     configurations.all {
         resolutionStrategy {
