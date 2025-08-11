@@ -17,7 +17,7 @@ configurations.all {
 android {
     namespace = "com.authsignal"
 
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         minSdk = 23
@@ -51,7 +51,7 @@ android {
 }
 
 fun getProperty(name: String): String {
-    return System.getenv(name) ?: gradleLocalProperties(rootDir).getProperty(name)
+    return System.getenv(name) ?: gradleLocalProperties(rootDir, providers).getProperty(name)
 }
 
 val sourcesJar by tasks.creating(Jar::class) {
@@ -149,13 +149,12 @@ jreleaser {
     }
 }
 
-val ktorVersion: String by project
-
 dependencies {
-    implementation("io.ktor:ktor-client-android:$ktorVersion")
-    implementation("io.ktor:ktor-client-core:$ktorVersion")
-    implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
-    implementation("androidx.credentials:credentials:1.2.2")
-    implementation("androidx.credentials:credentials-play-services-auth:1.2.2")
+    implementation("io.ktor:ktor-client-android:2.2.4")
+    implementation("io.ktor:ktor-client-core:2.2.4")
+    implementation("io.ktor:ktor-client-content-negotiation:2.2.4")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:2.2.4")
+    implementation("androidx.credentials:credentials:1.5.0")
+    implementation("androidx.credentials:credentials-play-services-auth:1.5.0")
+    implementation("androidx.datastore:datastore-preferences:1.1.7")
 }
