@@ -5,8 +5,7 @@ import android.os.Build
 import android.util.Log
 import androidx.credentials.*
 import androidx.credentials.exceptions.*
-import androidx.credentials.exceptions.domerrors.DomError
-import androidx.credentials.exceptions.domerrors.InvalidStateError
+import androidx.credentials.exceptions.domerrors.*
 import androidx.credentials.exceptions.publickeycredential.*
 import com.authsignal.models.AuthsignalResponse
 import com.authsignal.passkey.models.*
