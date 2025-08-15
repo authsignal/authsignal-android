@@ -7,6 +7,7 @@ import com.authsignal.push.AuthsignalPush
 import com.authsignal.sms.AuthsignalSMS
 import com.authsignal.totp.AuthsignalTOTP
 import com.authsignal.device.AuthsignalDevice
+import com.authsignal.whatsapp.AuthsignalWhatsApp
 
 class Authsignal(
   tenantID: String,
@@ -19,6 +20,7 @@ class Authsignal(
   val device = AuthsignalDevice(tenantID = tenantID, baseURL = baseURL)
   val email = AuthsignalEmail(tenantID = tenantID, baseURL = baseURL)
   val sms = AuthsignalSMS(tenantID = tenantID, baseURL = baseURL)
+  val whatsapp = AuthsignalWhatsApp(tenantID = tenantID, baseURL = baseURL)
   val totp = AuthsignalTOTP(tenantID = tenantID, baseURL = baseURL)
 
   fun setToken(token: String) {
