@@ -5,6 +5,8 @@ import android.os.Build
 import android.util.Log
 import androidx.credentials.*
 import androidx.credentials.exceptions.*
+import androidx.credentials.exceptions.domerrors.*
+import androidx.credentials.exceptions.publickeycredential.*
 import com.authsignal.models.AuthsignalResponse
 import com.authsignal.passkey.models.*
 import kotlinx.serialization.json.Json
@@ -57,6 +59,18 @@ class PasskeyManager(private val context: Context?) {
         error = "The user canceled the passkey creation request.",
         errorCode = "user_canceled"
       )
+    } catch (e: CreatePublicKeyCredentialDomException) {
+      if (e.domError is InvalidStateError) {
+        AuthsignalResponse(
+          error = e.message,
+          errorCode = "invalid_state_error"
+        )
+      } else {
+        AuthsignalResponse(
+          error = e.message,
+          errorCode = "dom_error"
+        )
+      }
     } catch (e: CreateCredentialException) {
       Log.e(TAG, "createCredential failed: ${e.message}")
 
