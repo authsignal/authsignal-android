@@ -24,8 +24,8 @@ private val defaultDeviceIdPreferencesKey = stringPreferencesKey("@as_device_id"
 class AuthsignalPasskey(
   tenantID: String,
   baseURL: String,
-  private val activity: Activity?,
-  private val deviceId: String?) {
+  private val activity: Activity? = null,
+  private val deviceId: String? = null) {
   private val api = PasskeyAPI(tenantID, baseURL)
   private val manager = PasskeyManager(activity)
   private val cache = TokenCache.shared
