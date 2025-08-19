@@ -170,7 +170,7 @@ class AuthsignalPasskey(
   }
 
   fun isSupported(): Boolean {
-    return Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+    return Build.VERSION.SDK_INT >= 28
   }
 
   @Deprecated("Use 'preferImmediatelyAvailableCredentials' to control what happens when a passkey isn't available.")
