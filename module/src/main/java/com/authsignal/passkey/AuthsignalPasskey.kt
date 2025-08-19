@@ -2,6 +2,7 @@ package com.authsignal.passkey
 
 import android.app.Activity
 import android.content.Context
+import android.os.Build
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
@@ -168,6 +169,11 @@ class AuthsignalPasskey(
     return AuthsignalResponse(data = signInResponse)
   }
 
+  fun isSupported(): Boolean {
+    return Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+  }
+
+  @Deprecated("Use 'preferImmediatelyAvailableCredentials' to control what happens when a passkey isn't available.")
   suspend fun isAvailableOnDevice(): AuthsignalResponse<Boolean> {
     val hasPasskeyCredentialAvailable = dataStore?.data
       ?.map { preferences ->
