@@ -48,3 +48,13 @@ data class APIErrorResponse(
   val errorCode: String? = null,
   val errorDescription: String? = null,
 )
+
+object SdkErrorCodes {
+  const val SdkError = "sdk_error"
+  const val UserCanceled = "user_canceled"
+  const val NoCredential = "no_credential"
+  const val MatchedExcludedCredential = "matched_excluded_credential"
+  const val InvalidStateError = "invalid_state_error"
+  const val DomError = "dom_error"
+  const val InvalidCredential = "invalid_credential"
+}

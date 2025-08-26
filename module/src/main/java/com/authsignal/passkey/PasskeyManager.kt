@@ -7,6 +7,7 @@ import androidx.credentials.*
 import androidx.credentials.exceptions.*
 import androidx.credentials.exceptions.domerrors.*
 import androidx.credentials.exceptions.publickeycredential.*
+import com.authsignal.SdkErrorCodes
 import com.authsignal.models.AuthsignalResponse
 import com.authsignal.passkey.models.*
 import kotlinx.serialization.json.Json
@@ -36,7 +37,7 @@ class PasskeyManager(private val context: Context?) {
     if (Build.VERSION.SDK_INT <= 28) {
       return AuthsignalResponse(
         error = "Passkey registration requires API version 28 or higher.",
-        errorCode = "sdk_error"
+        errorCode = SdkErrorCodes.SdkError
       )
     }
 
@@ -59,7 +60,7 @@ class PasskeyManager(private val context: Context?) {
     } catch (e: CreateCredentialCancellationException) {
       AuthsignalResponse(
         error = "The user canceled the passkey creation request.",
-        errorCode = "user_canceled"
+        errorCode = SdkErrorCodes.UserCanceled
       )
     } catch (e: CreatePublicKeyCredentialDomException) {
       if (e.domError is InvalidStateError) {
@@ -68,18 +69,18 @@ class PasskeyManager(private val context: Context?) {
         return if (matchedExcludedCredential) {
           AuthsignalResponse(
             error = "An existing credential is already available for this device.",
-            errorCode = "matched_excluded_credential"
+            errorCode = SdkErrorCodes.MatchedExcludedCredential
           )
         } else {
           AuthsignalResponse(
             error = e.message,
-            errorCode = "invalid_state_error"
+            errorCode = SdkErrorCodes.InvalidStateError
           )
         }
       } else {
         AuthsignalResponse(
           error = e.message,
-          errorCode = "dom_error"
+          errorCode = SdkErrorCodes.DomError
         )
       }
     } catch (e: CreateCredentialException) {
@@ -115,12 +116,12 @@ class PasskeyManager(private val context: Context?) {
     } catch(e: GetCredentialCancellationException) {
       AuthsignalResponse(
         error = "The user canceled the passkey authentication request.",
-        errorCode = "user_canceled"
+        errorCode = SdkErrorCodes.UserCanceled
       )
     } catch(e: NoCredentialException) {
       AuthsignalResponse(
         error = "No credential is available for the passkey authentication request.",
-        errorCode = "no_credential"
+        errorCode = SdkErrorCodes.NoCredential
       )
     } catch (e : GetCredentialException) {
       Log.e(TAG, "getCredential failed: ${e.message}")
