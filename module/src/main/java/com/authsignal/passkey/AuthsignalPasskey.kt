@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.authsignal.SdkErrorCodes
 import com.authsignal.TokenCache
 import com.authsignal.models.AuthsignalResponse
 import com.authsignal.passkey.api.*
@@ -36,7 +37,8 @@ class AuthsignalPasskey(
     token: String? = null,
     username: String? = null,
     displayName: String? = null,
-    preferImmediatelyAvailableCredentials: Boolean = true
+    preferImmediatelyAvailableCredentials: Boolean = true,
+    ignorePasskeyAlreadyExistsError: Boolean = false,
   ): AuthsignalResponse<SignUpResponse> {
     val userToken = token ?: cache.token ?: return cache.handleTokenNotSetError()
 
@@ -61,6 +63,10 @@ class AuthsignalPasskey(
     val optionsJson = Json.encodeToString(options)
 
     val registerResponse = manager.register(optionsJson, preferImmediatelyAvailableCredentials)
+
+    if (ignorePasskeyAlreadyExistsError && registerResponse.errorCode == SdkErrorCodes.MatchedExcludedCredential) {
+      return AuthsignalResponse()
+    }
 
     val credential = registerResponse.data ?: return AuthsignalResponse(
       error = registerResponse.error,
@@ -171,6 +177,25 @@ class AuthsignalPasskey(
 
   fun isSupported(): Boolean {
     return Build.VERSION.SDK_INT >= 28
+  }
+
+  suspend fun shouldPromptToCreatePasskey(): AuthsignalResponse<Boolean> {
+    val existingCredentialId = dataStore?.data
+      ?.map { preferences ->
+        preferences[passkeyCredentialIdPreferencesKey]
+      }?.first() ?: return AuthsignalResponse(data = true)
+
+    val passkeyAuthenticatorResponse =  api.getPasskeyAuthenticator(existingCredentialId)
+
+    if (passkeyAuthenticatorResponse.errorCode == SdkErrorCodes.InvalidCredential) {
+      return AuthsignalResponse(data = true)
+    }
+
+    return AuthsignalResponse(
+      data = false,
+      error = passkeyAuthenticatorResponse.error,
+      errorCode = passkeyAuthenticatorResponse.errorCode,
+    )
   }
 
   @Deprecated("Use 'preferImmediatelyAvailableCredentials' to control what happens when a passkey isn't available.")
