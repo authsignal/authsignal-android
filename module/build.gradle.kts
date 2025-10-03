@@ -17,7 +17,7 @@ configurations.all {
 android {
     namespace = "com.authsignal"
 
-    compileSdk = 35
+    compileSdk = 33
 
     defaultConfig {
         minSdk = 23
@@ -25,12 +25,12 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
 
     kotlinOptions {
-        jvmTarget = "17"
+        jvmTarget = "11"
     }
 
     buildTypes {
@@ -51,7 +51,7 @@ android {
 }
 
 fun getProperty(name: String): String {
-    return System.getenv(name) ?: gradleLocalProperties(rootDir, providers).getProperty(name)
+    return System.getenv(name) ?: gradleLocalProperties(rootDir).getProperty(name) ?: ""
 }
 
 val sourcesJar by tasks.creating(Jar::class) {
@@ -150,11 +150,11 @@ jreleaser {
 }
 
 dependencies {
-    implementation("io.ktor:ktor-client-android:2.2.4")
-    implementation("io.ktor:ktor-client-core:2.2.4")
-    implementation("io.ktor:ktor-client-content-negotiation:2.2.4")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:2.2.4")
-    implementation("androidx.credentials:credentials:1.5.0")
-    implementation("androidx.credentials:credentials-play-services-auth:1.5.0")
-    implementation("androidx.datastore:datastore-preferences:1.1.7")
+    implementation("io.ktor:ktor-client-android:2.1.3")
+    implementation("io.ktor:ktor-client-core:2.1.3")
+    implementation("io.ktor:ktor-client-content-negotiation:2.1.3")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:2.1.3")
+    implementation("androidx.credentials:credentials:1.2.0")
+    implementation("androidx.credentials:credentials-play-services-auth:1.2.0")
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
 }
