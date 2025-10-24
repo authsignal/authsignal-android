@@ -7,7 +7,7 @@ import java.security.KeyStore.PrivateKeyEntry
 import java.security.Signature
 import kotlin.math.floor
 
-private const val TAG = "com.authsignal.device"
+private const val TAG = "com.authsignal"
 
 object Signer {
   fun sign(message: String, key: PrivateKeyEntry): AuthsignalResponse<String> {
