@@ -30,9 +30,7 @@ object Signer {
   }
 
   fun signWithTimeBasedMessage(key: PrivateKeyEntry): AuthsignalResponse<String> {
-    val secondsSinceEpoch = (System.currentTimeMillis() / 1000).toDouble()
-
-    val message = floor(secondsSinceEpoch / (60 * 10)).toString()
+    val message = generateTimeBasedMessage()
 
     return sign(message = message, key = key)
   }
@@ -46,26 +44,6 @@ object Signer {
   }
 
   fun finishSigning(message: String, signer: Signature): AuthsignalResponse<String> {
-    val msg: ByteArray = message.toByteArray(StandardCharsets.UTF_8)
-
-    return try {
-      signer.update(msg)
-
-      val signature = signer.sign()
-
-      AuthsignalResponse(data = Encoder.toBase64String(signature))
-    } catch (e: Exception) {
-      Log.e(TAG, "Signature generation failed: $e")
-
-      AuthsignalResponse(error = e.message)
-    }
-  }
-
-  fun finishSigningWithTimeBasedMessage(signer: Signature): AuthsignalResponse<String> {
-    val secondsSinceEpoch = (System.currentTimeMillis() / 1000).toDouble()
-
-    val message = floor(secondsSinceEpoch / (60 * 10)).toString()
-
     val messageData: ByteArray = message.toByteArray(StandardCharsets.UTF_8)
 
     return try {
@@ -79,5 +57,17 @@ object Signer {
 
       AuthsignalResponse(error = e.message)
     }
+  }
+
+  fun finishSigningWithTimeBasedMessage(signer: Signature): AuthsignalResponse<String> {
+    val message = generateTimeBasedMessage()
+
+    return finishSigning(message = message, signer = signer)
+  }
+
+  private fun generateTimeBasedMessage(): String {
+    val secondsSinceEpoch = (System.currentTimeMillis() / 1000).toDouble()
+
+    return floor(secondsSinceEpoch / (60 * 10)).toString()
   }
 }
