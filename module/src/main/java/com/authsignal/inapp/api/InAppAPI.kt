@@ -1,9 +1,12 @@
-package com.authsignal.push.api
+package com.authsignal.inapp.api
 
 import com.authsignal.APIError
 import com.authsignal.Encoder
-import com.authsignal.models.*
+import com.authsignal.inapp.api.models.InAppVerifyRequest
+import com.authsignal.inapp.api.models.InAppVerifyResponse
+import com.authsignal.models.AuthsignalResponse
 import com.authsignal.models.api.*
+import com.authsignal.models.*
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.android.*
@@ -13,7 +16,7 @@ import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 
-class PushAPI(tenantID: String, private val baseURL: String) {
+class InAppAPI(tenantID: String, private val baseURL: String) {
   private val client = HttpClient(Android) {
     install(ContentNegotiation) {
       json(Json {
@@ -27,7 +30,7 @@ class PushAPI(tenantID: String, private val baseURL: String) {
 
   suspend fun getCredential(publicKey: String): AuthsignalResponse<AppCredential> {
     val encodedKey = Encoder.toBase64String(publicKey.toByteArray())
-    val url = "$baseURL/client/user-authenticators/push?publicKey=$encodedKey"
+    val url = "$baseURL/client/user-authenticators/in-app?publicKey=$encodedKey"
 
     return try {
       val response = client.get(url) {
@@ -52,7 +55,7 @@ class PushAPI(tenantID: String, private val baseURL: String) {
     token: String,
     publicKey: String,
     deviceName: String = ""): AuthsignalResponse<AppCredential> {
-    val url = "$baseURL/client/user-authenticators/push"
+    val url = "$baseURL/client/user-authenticators/in-app"
     val body = AddAppCredentialRequest(
       publicKey,
       deviceName,
@@ -85,7 +88,7 @@ class PushAPI(tenantID: String, private val baseURL: String) {
     publicKey: String,
     signature: String,
   ): AuthsignalResponse<Boolean> {
-    val url = "$baseURL/client/user-authenticators/push/remove"
+    val url = "$baseURL/client/user-authenticators/in-app/remove"
     val body = RemoveAppCredentialRequest(publicKey, signature)
 
     return try {
@@ -110,34 +113,20 @@ class PushAPI(tenantID: String, private val baseURL: String) {
     }
   }
 
-  suspend fun getChallenge(publicKey: String): AuthsignalResponse<AppChallenge?> {
-    val encodedKey = Encoder.toBase64String(publicKey.toByteArray())
-    val url = "$baseURL/client/user-authenticators/push/challenge?publicKey=$encodedKey"
+  suspend fun challenge(): AuthsignalResponse<ChallengeResponse> {
+    val url = "$baseURL/client/challenge"
 
     return try {
-      val response = client.get(url) {
+      val response = client.post(url) {
         headers {
           append(HttpHeaders.Authorization, basicAuth)
         }
       }
 
       if (response.status == HttpStatusCode.OK) {
-        val data = response.body<AppChallengeResponse>()
+        val data = response.body<ChallengeResponse>()
 
-        val challengeId = data.challengeId ?: return AuthsignalResponse(data = null)
-        val userId = data.userId ?: return AuthsignalResponse(data = null)
-
-        val appChallenge =  AppChallenge(
-          challengeId = challengeId,
-          userId = userId,
-          actionCode = data.actionCode,
-          idempotencyKey = data.idempotencyKey,
-          ipAddress = data.ipAddress,
-          userAgent = data.userAgent,
-          deviceId = data.deviceId,
-        )
-
-        return AuthsignalResponse(data = appChallenge)
+        AuthsignalResponse(data = data)
       } else {
         APIError.mapToErrorResponse(response)
       }
@@ -146,20 +135,17 @@ class PushAPI(tenantID: String, private val baseURL: String) {
     }
   }
 
-  suspend fun updateChallenge(
+  suspend fun verify(
     challengeId: String,
     publicKey: String,
     signature: String,
-    approved: Boolean,
-    verificationCode: String?
-  ): AuthsignalResponse<Boolean> {
-    val url = "$baseURL/client/user-authenticators/push/challenge"
-    val body = UpdateAppChallengeRequest(
-      publicKey,
+    token: String?
+  ): AuthsignalResponse<InAppVerifyResponse> {
+    val url = "$baseURL/client/verify/device"
+    val body = InAppVerifyRequest(
       challengeId,
+      publicKey,
       signature,
-      approved,
-      verificationCode,
     )
 
     return try {
@@ -168,14 +154,18 @@ class PushAPI(tenantID: String, private val baseURL: String) {
         setBody(body)
 
         headers {
-          append(HttpHeaders.Authorization, basicAuth)
+          append(
+            HttpHeaders.Authorization,
+            if (token != null) "Bearer $token" else basicAuth,
+          )
         }
       }
 
       val success = response.status == HttpStatusCode.OK
 
       if (success) {
-        AuthsignalResponse(data = true)
+        val data = response.body<InAppVerifyResponse>()
+        AuthsignalResponse(data = data)
       } else {
         APIError.mapToErrorResponse(response)
       }

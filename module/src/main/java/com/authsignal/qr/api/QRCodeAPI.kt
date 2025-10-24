@@ -1,11 +1,12 @@
-package com.authsignal.device.api
+package com.authsignal.qr.api
 
 import com.authsignal.APIError
 import com.authsignal.Encoder
 import com.authsignal.models.AuthsignalResponse
-import com.authsignal.device.api.models.*
-import com.authsignal.device.models.DeviceCredential
-import com.authsignal.models.ChallengeResponse
+import com.authsignal.models.api.*
+import com.authsignal.models.*
+import com.authsignal.qr.api.models.ClaimChallengeRequest
+import com.authsignal.qr.api.models.ClaimChallengeResponse
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.android.*
@@ -15,7 +16,7 @@ import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 
-class DeviceAPI(tenantID: String, private val baseURL: String) {
+class QRCodeAPI(tenantID: String, private val baseURL: String) {
   private val client = HttpClient(Android) {
     install(ContentNegotiation) {
       json(Json {
@@ -27,31 +28,9 @@ class DeviceAPI(tenantID: String, private val baseURL: String) {
 
   private val basicAuth = "Basic ${Encoder.toBase64String("$tenantID:".toByteArray())}"
 
-  suspend fun challenge(): AuthsignalResponse<ChallengeResponse> {
-    val url = "$baseURL/client/challenge"
-
-    return try {
-      val response = client.post(url) {
-        headers {
-          append(HttpHeaders.Authorization, basicAuth)
-        }
-      }
-
-      if (response.status == HttpStatusCode.OK) {
-        val data = response.body<ChallengeResponse>()
-
-        AuthsignalResponse(data = data)
-      } else {
-        APIError.mapToErrorResponse(response)
-      }
-    } catch (e: Exception) {
-      APIError.handleNetworkException(e)
-    }
-  }
-
-  suspend fun getCredential(publicKey: String): AuthsignalResponse<DeviceCredential> {
+  suspend fun getCredential(publicKey: String): AuthsignalResponse<AppCredential> {
     val encodedKey = Encoder.toBase64String(publicKey.toByteArray())
-    val url = "$baseURL/client/user-authenticators/device?publicKey=$encodedKey"
+    val url = "$baseURL/client/user-authenticators/qr-code?publicKey=$encodedKey"
 
     return try {
       val response = client.get(url) {
@@ -61,14 +40,7 @@ class DeviceAPI(tenantID: String, private val baseURL: String) {
       }
 
       if (response.status == HttpStatusCode.OK) {
-        val credentialResponse = response.body<CredentialResponse>()
-
-        val data = DeviceCredential(
-          credentialResponse.userAuthenticatorId,
-          credentialResponse.verifiedAt,
-          credentialResponse.userId,
-          credentialResponse.lastVerifiedAt,
-        )
+        val data = response.body<AppCredential>()
 
         AuthsignalResponse(data = data)
       } else {
@@ -82,9 +54,9 @@ class DeviceAPI(tenantID: String, private val baseURL: String) {
   suspend fun addCredential(
     token: String,
     publicKey: String,
-    deviceName: String = ""): AuthsignalResponse<DeviceCredential> {
-    val url = "$baseURL/client/user-authenticators/device"
-    val body = AddCredentialRequest(
+    deviceName: String = ""): AuthsignalResponse<AppCredential> {
+    val url = "$baseURL/client/user-authenticators/qr-code"
+    val body = AddAppCredentialRequest(
       publicKey,
       deviceName,
       devicePlatform = "android",
@@ -101,13 +73,7 @@ class DeviceAPI(tenantID: String, private val baseURL: String) {
       }
 
       if (response.status == HttpStatusCode.OK) {
-        val credentialResponse = response.body<CredentialResponse>()
-
-        val data = DeviceCredential(
-          credentialResponse.userAuthenticatorId,
-          credentialResponse.verifiedAt,
-          credentialResponse.userId,
-        )
+        val data = response.body<AppCredential>()
 
         AuthsignalResponse(data = data)
       } else {
@@ -122,8 +88,8 @@ class DeviceAPI(tenantID: String, private val baseURL: String) {
     publicKey: String,
     signature: String,
   ): AuthsignalResponse<Boolean> {
-    val url = "$baseURL/client/user-authenticators/device/remove"
-    val body = RemoveCredentialRequest(publicKey, signature)
+    val url = "$baseURL/client/user-authenticators/qr-code/remove"
+    val body = RemoveAppCredentialRequest(publicKey, signature)
 
     return try {
       val response = client.post(url) {
@@ -147,35 +113,12 @@ class DeviceAPI(tenantID: String, private val baseURL: String) {
     }
   }
 
-  suspend fun getChallenge(publicKey: String): AuthsignalResponse<DeviceChallengeResponse> {
-    val encodedKey = Encoder.toBase64String(publicKey.toByteArray())
-    val url = "$baseURL/client/user-authenticators/device/challenge?publicKey=$encodedKey"
-
-    return try {
-      val response = client.get(url) {
-        headers {
-          append(HttpHeaders.Authorization, basicAuth)
-        }
-      }
-
-      if (response.status == HttpStatusCode.OK) {
-        val data = response.body<DeviceChallengeResponse>()
-
-        AuthsignalResponse(data = data)
-      } else {
-        APIError.mapToErrorResponse(response)
-      }
-    } catch (e: Exception) {
-      APIError.handleNetworkException(e)
-    }
-  }
-
   suspend fun claimChallenge(
     challengeId: String,
     publicKey: String,
     signature: String,
   ): AuthsignalResponse<ClaimChallengeResponse> {
-    val url = "$baseURL/client/user-authenticators/device/challenge/claim"
+    val url = "$baseURL/client/user-authenticators/qr-code/challenge/claim"
     val body = ClaimChallengeRequest(
       publicKey,
       challengeId,
@@ -210,8 +153,8 @@ class DeviceAPI(tenantID: String, private val baseURL: String) {
     approved: Boolean,
     verificationCode: String?
   ): AuthsignalResponse<Boolean> {
-    val url = "$baseURL/client/user-authenticators/device/challenge"
-    val body = UpdateChallengeRequest(
+    val url = "$baseURL/client/user-authenticators/qr-code/challenge"
+    val body = UpdateAppChallengeRequest(
       publicKey,
       challengeId,
       signature,
@@ -233,45 +176,6 @@ class DeviceAPI(tenantID: String, private val baseURL: String) {
 
       if (success) {
         AuthsignalResponse(data = true)
-      } else {
-        APIError.mapToErrorResponse(response)
-      }
-    } catch (e: Exception) {
-      APIError.handleNetworkException(e)
-    }
-  }
-
-  suspend fun verify(
-    challengeId: String,
-    publicKey: String,
-    signature: String,
-    token: String?
-  ): AuthsignalResponse<VerifyDeviceResponse> {
-    val url = "$baseURL/client/verify/device"
-    val body = VerifyDeviceRequest(
-      challengeId,
-      publicKey,
-      signature,
-    )
-
-    return try {
-      val response = client.post(url) {
-        contentType(ContentType.Application.Json)
-        setBody(body)
-
-        headers {
-          append(
-            HttpHeaders.Authorization,
-            if (token != null) "Bearer $token" else basicAuth,
-          )
-        }
-      }
-
-      val success = response.status == HttpStatusCode.OK
-
-      if (success) {
-        val data = response.body<VerifyDeviceResponse>()
-        AuthsignalResponse(data = data)
       } else {
         APIError.mapToErrorResponse(response)
       }

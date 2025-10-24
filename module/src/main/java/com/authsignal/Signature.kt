@@ -1,13 +1,13 @@
-package com.authsignal.push
+package com.authsignal
 
 import android.util.Log
-import com.authsignal.Encoder
 import com.authsignal.models.AuthsignalResponse
 import java.nio.charset.StandardCharsets
 import java.security.KeyStore.PrivateKeyEntry
 import java.security.Signature
+import kotlin.math.floor
 
-private const val TAG = "com.authsignal.push"
+private const val TAG = "com.authsignal.device"
 
 object Signer {
   fun sign(message: String, key: PrivateKeyEntry): AuthsignalResponse<String> {
@@ -29,6 +29,14 @@ object Signer {
     }
   }
 
+  fun signWithTimeBasedMessage(key: PrivateKeyEntry): AuthsignalResponse<String> {
+    val secondsSinceEpoch = (System.currentTimeMillis() / 1000).toDouble()
+
+    val message = floor(secondsSinceEpoch / (60 * 10)).toString()
+
+    return sign(message = message, key = key)
+  }
+
   fun startSigning(key: PrivateKeyEntry): Signature {
     val signer = Signature.getInstance("SHA256withECDSA")
 
@@ -42,6 +50,26 @@ object Signer {
 
     return try {
       signer.update(msg)
+
+      val signature = signer.sign()
+
+      AuthsignalResponse(data = Encoder.toBase64String(signature))
+    } catch (e: Exception) {
+      Log.e(TAG, "Signature generation failed: $e")
+
+      AuthsignalResponse(error = e.message)
+    }
+  }
+
+  fun finishSigningWithTimeBasedMessage(signer: Signature): AuthsignalResponse<String> {
+    val secondsSinceEpoch = (System.currentTimeMillis() / 1000).toDouble()
+
+    val message = floor(secondsSinceEpoch / (60 * 10)).toString()
+
+    val messageData: ByteArray = message.toByteArray(StandardCharsets.UTF_8)
+
+    return try {
+      signer.update(messageData)
 
       val signature = signer.sign()
 

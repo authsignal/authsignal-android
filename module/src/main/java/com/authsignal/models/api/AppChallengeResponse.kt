@@ -1,9 +1,10 @@
-package com.authsignal.push.api.models
+package com.authsignal.models.api
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class PushChallengeResponse(
+data class AppChallengeResponse(
+  val userAuthenticatorId: String,
   val challengeId: String? = null,
   val userId: String? = null,
   val actionCode: String? = null,

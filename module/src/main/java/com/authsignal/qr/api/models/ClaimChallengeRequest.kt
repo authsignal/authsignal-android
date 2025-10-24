@@ -1,12 +1,10 @@
-package com.authsignal.push.api.models
+package com.authsignal.qr.api.models
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class UpdateChallengeRequest(
+data class ClaimChallengeRequest(
   val publicKey: String,
   val challengeId: String,
   val signature: String,
-  val approved: Boolean,
-  val verificationCode: String?,
 )

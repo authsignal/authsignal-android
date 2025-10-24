@@ -1,4 +1,4 @@
-package com.authsignal.device.api.models
+package com.authsignal.qr.api.models
 
 import kotlinx.serialization.Serializable
 

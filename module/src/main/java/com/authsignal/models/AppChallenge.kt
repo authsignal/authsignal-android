@@ -1,6 +1,9 @@
-package com.authsignal.device.models
+package com.authsignal.models
 
-data class DeviceChallenge(
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class AppChallenge(
   val challengeId: String,
   val userId: String,
   val actionCode: String?,

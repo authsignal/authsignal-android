@@ -1,20 +1,19 @@
-package com.authsignal.push
+package com.authsignal.qr
 
 import com.authsignal.DeviceUtils
 import com.authsignal.KeyManager
 import com.authsignal.Signer
 import com.authsignal.TokenCache
-import com.authsignal.models.AuthsignalResponse
-import com.authsignal.push.api.PushAPI
-import com.authsignal.models.AppChallenge
-import com.authsignal.models.AppCredential
+import com.authsignal.models.*
+import com.authsignal.qr.api.QRCodeAPI
+import com.authsignal.qr.api.models.ClaimChallengeResponse
 import java.security.Signature
 
-class AuthsignalPush(
+class AuthsignalQRCode(
   tenantID: String,
   baseURL: String) {
-  private val api = PushAPI(tenantID, baseURL)
-  private val keyManager = KeyManager("push")
+  private val api = QRCodeAPI(tenantID, baseURL)
+  private val keyManager = KeyManager("qr_code")
 
   suspend fun getCredential(): AuthsignalResponse<AppCredential> {
     val publicKeyResponse = keyManager.getPublicKey()
@@ -81,16 +80,26 @@ class AuthsignalPush(
     )
   }
 
-  suspend fun getChallenge(): AuthsignalResponse<AppChallenge?> {
-    val publicKeyResponse = keyManager.getPublicKey()
+  suspend fun claimChallenge(
+    challengeId: String,
+    signer: Signature? = null
+  ): AuthsignalResponse<ClaimChallengeResponse> {
+    val keyResponse = keyManager.getKey()
 
-    val publicKey = publicKeyResponse.data
-      ?: return AuthsignalResponse(
-        error = publicKeyResponse.error,
-        errorCode = publicKeyResponse.errorCode
-      )
+    val key = keyResponse.data
+      ?: return AuthsignalResponse(error = keyResponse.error)
 
-    return api.getChallenge(publicKey)
+    val signatureResponse = if (signer != null) {
+      Signer.finishSigning(challengeId, signer)
+    } else {
+      Signer.sign(challengeId, key)
+    }
+
+    val signature = signatureResponse.data ?: return AuthsignalResponse(error = signatureResponse.error)
+
+    val publicKey = keyManager.derivePublicKey(key)
+
+    return api.claimChallenge(challengeId, publicKey, signature)
   }
 
   suspend fun updateChallenge(
