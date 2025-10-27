@@ -1,9 +1,9 @@
-package com.authsignal.device.api.models
+package com.authsignal.models.api
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class AddCredentialRequest(
+data class AddAppCredentialRequest(
   val publicKey: String,
   val deviceName: String,
   val devicePlatform: String,

@@ -1,10 +1,9 @@
-package com.authsignal.device.api.models
+package com.authsignal.models.api
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class VerifyDeviceRequest(
-  val challengeId: String,
+data class RemoveAppCredentialRequest(
   val publicKey: String,
   val signature: String,
 )

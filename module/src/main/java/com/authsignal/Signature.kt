@@ -1,13 +1,13 @@
-package com.authsignal.push
+package com.authsignal
 
 import android.util.Log
-import com.authsignal.Encoder
 import com.authsignal.models.AuthsignalResponse
 import java.nio.charset.StandardCharsets
 import java.security.KeyStore.PrivateKeyEntry
 import java.security.Signature
+import kotlin.math.floor
 
-private const val TAG = "com.authsignal.push"
+private const val TAG = "com.authsignal"
 
 object Signer {
   fun sign(message: String, key: PrivateKeyEntry): AuthsignalResponse<String> {
@@ -29,6 +29,12 @@ object Signer {
     }
   }
 
+  fun signWithTimeBasedMessage(key: PrivateKeyEntry): AuthsignalResponse<String> {
+    val message = generateTimeBasedMessage()
+
+    return sign(message = message, key = key)
+  }
+
   fun startSigning(key: PrivateKeyEntry): Signature {
     val signer = Signature.getInstance("SHA256withECDSA")
 
@@ -38,10 +44,10 @@ object Signer {
   }
 
   fun finishSigning(message: String, signer: Signature): AuthsignalResponse<String> {
-    val msg: ByteArray = message.toByteArray(StandardCharsets.UTF_8)
+    val messageData: ByteArray = message.toByteArray(StandardCharsets.UTF_8)
 
     return try {
-      signer.update(msg)
+      signer.update(messageData)
 
       val signature = signer.sign()
 
@@ -51,5 +57,17 @@ object Signer {
 
       AuthsignalResponse(error = e.message)
     }
+  }
+
+  fun finishSigningWithTimeBasedMessage(signer: Signature): AuthsignalResponse<String> {
+    val message = generateTimeBasedMessage()
+
+    return finishSigning(message = message, signer = signer)
+  }
+
+  private fun generateTimeBasedMessage(): String {
+    val secondsSinceEpoch = (System.currentTimeMillis() / 1000).toDouble()
+
+    return floor(secondsSinceEpoch / (60 * 10)).toString()
   }
 }

@@ -1,20 +1,21 @@
-package com.authsignal.device
+package com.authsignal
 
 import android.os.Build
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Log
-import com.authsignal.Encoder
 import com.authsignal.models.AuthsignalResponse
 import java.security.InvalidAlgorithmParameterException
 import java.security.KeyPairGenerator
 import java.security.KeyStore
 import java.security.spec.X509EncodedKeySpec
 
-private const val TAG = "com.authsignal.device"
+private const val TAG = "com.authsignal"
 private const val keyName = "authsignal_signing_key"
 
-object KeyManager {
+class KeyManager(keySuffix: String) {
+  private val scopedKeyName = "${keyName}_${keySuffix}"
+
   fun getOrCreatePublicKey(
     userAuthenticationRequired: Boolean,
     timeout: Int,
@@ -29,38 +30,54 @@ object KeyManager {
     return createKeyPair(userAuthenticationRequired, timeout, authorizationType)
   }
 
-  fun getPublicKey(): AuthsignalResponse<String> {
-    val keyResponse = getKey()
-
-    val key = keyResponse.data ?: return AuthsignalResponse(error = keyResponse.error)
-
-    val publicKey = derivePublicKey(key)
-
-    return AuthsignalResponse(data = publicKey)
-  }
-
-  fun getKey(): AuthsignalResponse<KeyStore.PrivateKeyEntry> {
-    return try {
-      val keyStore = KeyStore.getInstance("AndroidKeyStore")
-      keyStore.load(null)
-      val entry = keyStore.getEntry(keyName, null) as KeyStore.PrivateKeyEntry
-      AuthsignalResponse(data = entry)
-    } catch (e: Exception) {
-      AuthsignalResponse(data = null)
-    }
-  }
-
   fun deleteKey(): Boolean {
     return try {
       val keyStore = KeyStore.getInstance("AndroidKeyStore")
+
       keyStore.load(null)
-      keyStore.deleteEntry(keyName)
+
+      val scopedKeyEntry = keyStore.getEntry(scopedKeyName, null)
+
+      if (scopedKeyEntry != null) {
+        keyStore.deleteEntry(scopedKeyName)
+      }
+
+      val keyEntry = keyStore.getEntry(keyName, null)
+
+      if (keyEntry != null) {
+        keyStore.deleteEntry(keyName)
+      }
+
       true
     } catch (e: java.lang.Exception) {
       Log.e(TAG, "deleteKey failed: ${e.message}")
 
       return false
     }
+  }
+
+  fun getKey(): AuthsignalResponse<KeyStore.PrivateKeyEntry> {
+    return try {
+      val keyStore = KeyStore.getInstance("AndroidKeyStore")
+
+      keyStore.load(null)
+
+      val entry = keyStore.getEntry(scopedKeyName, null) ?: keyStore.getEntry(keyName, null)
+
+      AuthsignalResponse(data = entry as KeyStore.PrivateKeyEntry)
+    } catch (e: Exception) {
+      AuthsignalResponse(data = null)
+    }
+  }
+
+  fun getPublicKey(): AuthsignalResponse<String> {
+    val keyResponse = getKey()
+
+    val key = keyResponse.data ?: return AuthsignalResponse(data = null)
+
+    val publicKey = derivePublicKey(key)
+
+    return AuthsignalResponse(data = publicKey)
   }
 
   fun derivePublicKey(key: KeyStore.PrivateKeyEntry): String {
@@ -79,7 +96,7 @@ object KeyManager {
     val digests = KeyProperties.DIGEST_SHA256
     val purposes = KeyProperties.PURPOSE_SIGN
 
-    val paramsBuilder = KeyGenParameterSpec.Builder(keyName, purposes)
+    val paramsBuilder = KeyGenParameterSpec.Builder(scopedKeyName, purposes)
       .setDigests(digests)
       .setUserAuthenticationRequired(userAuthenticationRequired)
 

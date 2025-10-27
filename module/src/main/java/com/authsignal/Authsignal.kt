@@ -6,7 +6,8 @@ import com.authsignal.passkey.AuthsignalPasskey
 import com.authsignal.push.AuthsignalPush
 import com.authsignal.sms.AuthsignalSMS
 import com.authsignal.totp.AuthsignalTOTP
-import com.authsignal.device.AuthsignalDevice
+import com.authsignal.qr.AuthsignalQRCode
+import com.authsignal.inapp.AuthsignalInApp
 import com.authsignal.whatsapp.AuthsignalWhatsApp
 
 class Authsignal(
@@ -17,7 +18,8 @@ class Authsignal(
 ) {
   val passkey = AuthsignalPasskey(tenantID = tenantID, baseURL = baseURL, activity = activity, deviceId = deviceId)
   val push = AuthsignalPush(tenantID = tenantID, baseURL = baseURL)
-  val device = AuthsignalDevice(tenantID = tenantID, baseURL = baseURL)
+  val qr = AuthsignalQRCode(tenantID = tenantID, baseURL = baseURL)
+  val inapp = AuthsignalInApp(tenantID = tenantID, baseURL = baseURL)
   val email = AuthsignalEmail(tenantID = tenantID, baseURL = baseURL)
   val sms = AuthsignalSMS(tenantID = tenantID, baseURL = baseURL)
   val whatsapp = AuthsignalWhatsApp(tenantID = tenantID, baseURL = baseURL)

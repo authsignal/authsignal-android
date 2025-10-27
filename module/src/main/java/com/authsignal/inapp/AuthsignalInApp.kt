@@ -1,20 +1,19 @@
-package com.authsignal.push
+package com.authsignal.inapp
 
 import com.authsignal.DeviceUtils
 import com.authsignal.KeyManager
 import com.authsignal.Signer
 import com.authsignal.TokenCache
-import com.authsignal.models.AuthsignalResponse
-import com.authsignal.push.api.PushAPI
-import com.authsignal.models.AppChallenge
-import com.authsignal.models.AppCredential
+import com.authsignal.inapp.api.InAppAPI
+import com.authsignal.inapp.api.models.*
+import com.authsignal.models.*
 import java.security.Signature
 
-class AuthsignalPush(
+class AuthsignalInApp(
   tenantID: String,
   baseURL: String) {
-  private val api = PushAPI(tenantID, baseURL)
-  private val keyManager = KeyManager("push")
+  private val api = InAppAPI(tenantID, baseURL)
+  private val keyManager = KeyManager("in_app")
 
   suspend fun getCredential(): AuthsignalResponse<AppCredential> {
     val publicKeyResponse = keyManager.getPublicKey()
@@ -81,48 +80,23 @@ class AuthsignalPush(
     )
   }
 
-  suspend fun getChallenge(): AuthsignalResponse<AppChallenge?> {
-    val publicKeyResponse = keyManager.getPublicKey()
+  suspend fun verify(): AuthsignalResponse<InAppVerifyResponse> {
+    val challengeResponse = api.challenge()
 
-    val publicKey = publicKeyResponse.data
-      ?: return AuthsignalResponse(
-        error = publicKeyResponse.error,
-        errorCode = publicKeyResponse.errorCode
-      )
+    val challengeId = challengeResponse.data?.challengeId
+      ?: return AuthsignalResponse(error = challengeResponse.error)
 
-    return api.getChallenge(publicKey)
-  }
-
-  suspend fun updateChallenge(
-    challengeId: String,
-    approved: Boolean,
-    verificationCode: String? = null,
-    signer: Signature? = null
-  ): AuthsignalResponse<Boolean> {
     val keyResponse = keyManager.getKey()
 
     val key = keyResponse.data
       ?: return AuthsignalResponse(error = keyResponse.error)
 
-    val signatureResponse = if (signer != null) {
-      Signer.finishSigning(challengeId, signer)
-    } else {
-      Signer.sign(challengeId, key)
-    }
+    val signatureResponse = Signer.sign(challengeId, key)
 
     val signature = signatureResponse.data ?: return AuthsignalResponse(error = signatureResponse.error)
 
     val publicKey = keyManager.derivePublicKey(key)
 
-    return api.updateChallenge(challengeId, publicKey, signature, approved, verificationCode)
-  }
-
-  fun startSigning(): Signature? {
-    val keyResponse = keyManager.getKey()
-
-    val key = keyResponse.data
-      ?: return null
-
-    return Signer.startSigning(key)
+    return api.verify(challengeId, publicKey, signature, TokenCache.shared.token)
   }
 }
