@@ -40,9 +40,16 @@ class InAppAPI(tenantID: String, private val baseURL: String) {
       }
 
       if (response.status == HttpStatusCode.OK) {
-        val data = response.body<AppCredential>()
+        val data = response.body<AppCredentialResponse>()
 
-        AuthsignalResponse(data = data)
+        val credential = AppCredential(
+          userId = data.userId,
+          credentialId = data.userAuthenticatorId,
+          createdAt = data.verifiedAt,
+          lastAuthenticatedAt = data.lastVerifiedAt,
+        )
+
+        AuthsignalResponse(data = credential)
       } else {
         APIError.mapToErrorResponse(response)
       }
@@ -73,9 +80,16 @@ class InAppAPI(tenantID: String, private val baseURL: String) {
       }
 
       if (response.status == HttpStatusCode.OK) {
-        val data = response.body<AppCredential>()
+        val data = response.body<AppCredentialResponse>()
 
-        AuthsignalResponse(data = data)
+        val credential = AppCredential(
+          userId = data.userId,
+          credentialId = data.userAuthenticatorId,
+          createdAt = data.verifiedAt,
+          lastAuthenticatedAt = data.lastVerifiedAt,
+        )
+
+        AuthsignalResponse(data = credential)
       } else {
         APIError.mapToErrorResponse(response)
       }
