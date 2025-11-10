@@ -97,6 +97,8 @@ class AuthsignalInApp(
 
     val publicKey = keyManager.derivePublicKey(key)
 
-    return api.verify(challengeId, publicKey, signature, TokenCache.shared.token)
+    val userToken = if (action == null) TokenCache.shared.token else null
+
+    return api.verify(challengeId, publicKey, signature, userToken)
   }
 }
