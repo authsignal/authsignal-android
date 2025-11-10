@@ -3,6 +3,7 @@ package com.authsignal.passkey.api
 import com.authsignal.APIError
 import com.authsignal.Encoder
 import com.authsignal.models.*
+import com.authsignal.models.api.*
 import com.authsignal.passkey.api.models.*
 import com.authsignal.passkey.models.*
 import io.ktor.client.*
@@ -13,8 +14,6 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
-
-private const val TAG = "com.authsignal.passkey.api"
 
 class PasskeyAPI(tenantID: String, private val baseURL: String) {
   private val client = HttpClient(Android) {
