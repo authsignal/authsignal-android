@@ -1,4 +1,4 @@
-package com.authsignal.passkey.api.models
+package com.authsignal.models.api
 
 import kotlinx.serialization.Serializable
 

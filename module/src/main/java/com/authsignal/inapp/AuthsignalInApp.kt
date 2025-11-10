@@ -80,8 +80,8 @@ class AuthsignalInApp(
     )
   }
 
-  suspend fun verify(): AuthsignalResponse<InAppVerifyResponse> {
-    val challengeResponse = api.challenge()
+  suspend fun verify(action: String? = null): AuthsignalResponse<InAppVerifyResponse> {
+    val challengeResponse = api.challenge(action = action)
 
     val challengeId = challengeResponse.data?.challengeId
       ?: return AuthsignalResponse(error = challengeResponse.error)

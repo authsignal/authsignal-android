@@ -127,11 +127,15 @@ class InAppAPI(tenantID: String, private val baseURL: String) {
     }
   }
 
-  suspend fun challenge(): AuthsignalResponse<ChallengeResponse> {
+  suspend fun challenge(action: String?): AuthsignalResponse<ChallengeResponse> {
     val url = "$baseURL/client/challenge"
+    val body = action?.let { ChallengeRequest(it) }
 
     return try {
       val response = client.post(url) {
+        contentType(ContentType.Application.Json)
+        setBody(body)
+
         headers {
           append(HttpHeaders.Authorization, basicAuth)
         }
