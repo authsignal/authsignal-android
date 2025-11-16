@@ -11,15 +11,16 @@ import java.security.KeyStore
 import java.security.spec.X509EncodedKeySpec
 
 private const val TAG = "com.authsignal"
-private const val keyName = "authsignal_signing_key"
+private const val keyTagPrefix = "authsignal_signing_key"
 
 class KeyManager(keySuffix: String) {
-  private val scopedKeyName = "${keyName}_${keySuffix}"
+  private val keyTag = "${keyTagPrefix}_${keySuffix}"
 
   fun getOrCreatePublicKey(
     userAuthenticationRequired: Boolean,
     timeout: Int,
-    authorizationType: Int
+    authorizationType: Int,
+    username: String? = null
   ): AuthsignalResponse<String> {
     val publicKeyResponse = getPublicKey()
 
@@ -27,42 +28,25 @@ class KeyManager(keySuffix: String) {
       return AuthsignalResponse(data = publicKeyResponse.data)
     }
 
-    return createKeyPair(userAuthenticationRequired, timeout, authorizationType)
+    return createKey(
+      userAuthenticationRequired,
+      timeout,
+      authorizationType,
+      username,
+    )
   }
 
-  fun deleteKey(): Boolean {
+  fun getKey(username: String? = null): AuthsignalResponse<KeyStore.PrivateKeyEntry> {
     return try {
       val keyStore = KeyStore.getInstance("AndroidKeyStore")
 
       keyStore.load(null)
 
-      val scopedKeyEntry = keyStore.getEntry(scopedKeyName, null)
+      val userKeyTag = getUserKeyTag(username = username)
+      val legacyKeyTag = getLegacyKeyTag()
 
-      if (scopedKeyEntry != null) {
-        keyStore.deleteEntry(scopedKeyName)
-      }
-
-      val keyEntry = keyStore.getEntry(keyName, null)
-
-      if (keyEntry != null) {
-        keyStore.deleteEntry(keyName)
-      }
-
-      true
-    } catch (e: java.lang.Exception) {
-      Log.e(TAG, "deleteKey failed: ${e.message}")
-
-      return false
-    }
-  }
-
-  fun getKey(): AuthsignalResponse<KeyStore.PrivateKeyEntry> {
-    return try {
-      val keyStore = KeyStore.getInstance("AndroidKeyStore")
-
-      keyStore.load(null)
-
-      val entry = keyStore.getEntry(scopedKeyName, null) ?: keyStore.getEntry(keyName, null)
+      val entry = keyStore.getEntry(userKeyTag, null)
+        ?: keyStore.getEntry(legacyKeyTag, null)
 
       AuthsignalResponse(data = entry as KeyStore.PrivateKeyEntry)
     } catch (e: Exception) {
@@ -70,8 +54,8 @@ class KeyManager(keySuffix: String) {
     }
   }
 
-  fun getPublicKey(): AuthsignalResponse<String> {
-    val keyResponse = getKey()
+  fun getPublicKey(username: String? = null): AuthsignalResponse<String> {
+    val keyResponse = getKey(username = username)
 
     val key = keyResponse.data ?: return AuthsignalResponse(data = null)
 
@@ -86,17 +70,50 @@ class KeyManager(keySuffix: String) {
     return Encoder.toBase64String(spec.encoded)
   }
 
-  private fun createKeyPair(
+  fun deleteKey(username: String? = null): Boolean {
+    return try {
+      val keyStore = KeyStore.getInstance("AndroidKeyStore")
+
+      keyStore.load(null)
+
+      val keyTag = getUserKeyTag(username = username)
+
+      val keyEntry = keyStore.getEntry(keyTag, null)
+
+      if (keyEntry != null) {
+        keyStore.deleteEntry(keyTag)
+      }
+
+      val legacyKeyTag = getLegacyKeyTag()
+
+      val legacyKeyEntry = keyStore.getEntry(legacyKeyTag, null)
+
+      if (legacyKeyEntry != null) {
+        keyStore.deleteEntry(keyTag)
+      }
+
+      true
+    } catch (e: java.lang.Exception) {
+      Log.e(TAG, "deleteKey failed: ${e.message}")
+
+      return false
+    }
+  }
+
+  private fun createKey(
     userAuthenticationRequired: Boolean,
     timeout: Int,
-    authorizationType: Int
+    authorizationType: Int,
+    username: String?,
   ): AuthsignalResponse<String> {
     val provider = "AndroidKeyStore"
     val algorithm = KeyProperties.KEY_ALGORITHM_EC
     val digests = KeyProperties.DIGEST_SHA256
     val purposes = KeyProperties.PURPOSE_SIGN
 
-    val paramsBuilder = KeyGenParameterSpec.Builder(scopedKeyName, purposes)
+    val keyTag = getUserKeyTag(username = username)
+
+    val paramsBuilder = KeyGenParameterSpec.Builder(keyTag, purposes)
       .setDigests(digests)
       .setUserAuthenticationRequired(userAuthenticationRequired)
 
@@ -125,5 +142,17 @@ class KeyManager(keySuffix: String) {
 
       AuthsignalResponse(error = e.message, errorCode = "unknown_key_generation_error")
     }
+  }
+
+  private fun getUserKeyTag(username: String?): String {
+    val cleanUsername = username
+      ?.trim()
+      ?.replace(Regex("[^A-Za-z0-9_-]"), "-")
+
+    return cleanUsername?.let { "${keyTag}_$it" } ?: keyTag
+  }
+
+  private fun getLegacyKeyTag(): String {
+    return keyTagPrefix
   }
 }
