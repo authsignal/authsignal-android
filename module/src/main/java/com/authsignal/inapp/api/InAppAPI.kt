@@ -159,7 +159,7 @@ class InAppAPI(tenantID: String, private val baseURL: String) {
     signature: String,
     token: String?
   ): AuthsignalResponse<InAppVerifyResponse> {
-    val url = "$baseURL/client/verify/device"
+    val url = "$baseURL/client/verify/in-app"
     val body = InAppVerifyRequest(
       challengeId,
       publicKey,

@@ -15,7 +15,7 @@ import kotlinx.serialization.decodeFromString
 
 private const val TAG = "com.authsignal.passkey"
 
-private const val EXCLUDED_CREDENTIAL_ERROR_CODE = "50157"
+private const val EXCLUDED_CREDENTIAL_ERROR_MESSAGE = "One of the excluded credentials exists on the local device"
 
 class PasskeyManager(private val context: Context?) {
   private val credentialManager: CredentialManager? =
@@ -64,7 +64,7 @@ class PasskeyManager(private val context: Context?) {
       )
     } catch (e: CreatePublicKeyCredentialDomException) {
       if (e.domError is InvalidStateError) {
-        val matchedExcludedCredential = e.message?.contains(EXCLUDED_CREDENTIAL_ERROR_CODE) ?: false
+        val matchedExcludedCredential = e.errorMessage?.contains(EXCLUDED_CREDENTIAL_ERROR_MESSAGE) ?: false
 
         return if (matchedExcludedCredential) {
           AuthsignalResponse(
