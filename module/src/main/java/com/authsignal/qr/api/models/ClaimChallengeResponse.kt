@@ -7,4 +7,6 @@ data class ClaimChallengeResponse(
   val success: Boolean,
   val userAgent: String? = null,
   val ipAddress: String? = null,
+  val actionCode: String? = null,
+  val idempotencyKey: String? = null,
 ) 
