@@ -145,9 +145,7 @@ class KeyManager(keySuffix: String) {
   }
 
   private fun getUserKeyTag(username: String?): String {
-    val cleanUsername = username
-      ?.trim()
-      ?.replace(Regex("[^A-Za-z0-9_-]"), "-")
+    val cleanUsername = username?.trim()
 
     return cleanUsername?.let { "${keyTag}_$it" } ?: keyTag
   }

@@ -1,6 +1,7 @@
 package com.authsignal
 
 import android.app.Activity
+import android.content.Context
 import com.authsignal.email.AuthsignalEmail
 import com.authsignal.passkey.AuthsignalPasskey
 import com.authsignal.push.AuthsignalPush
@@ -14,12 +15,13 @@ class Authsignal(
   tenantID: String,
   baseURL: String,
   activity: Activity? = null,
+  context: Context? = null,
   deviceId: String? = null,
 ) {
   val passkey = AuthsignalPasskey(tenantID = tenantID, baseURL = baseURL, activity = activity, deviceId = deviceId)
   val push = AuthsignalPush(tenantID = tenantID, baseURL = baseURL)
   val qr = AuthsignalQRCode(tenantID = tenantID, baseURL = baseURL)
-  val inapp = AuthsignalInApp(tenantID = tenantID, baseURL = baseURL)
+  val inapp = AuthsignalInApp(tenantID = tenantID, baseURL = baseURL, context = context)
   val email = AuthsignalEmail(tenantID = tenantID, baseURL = baseURL)
   val sms = AuthsignalSMS(tenantID = tenantID, baseURL = baseURL)
   val whatsapp = AuthsignalWhatsApp(tenantID = tenantID, baseURL = baseURL)

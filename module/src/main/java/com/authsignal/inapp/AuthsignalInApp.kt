@@ -1,7 +1,10 @@
 package com.authsignal.inapp
 
+import android.content.Context
 import com.authsignal.DeviceUtils
 import com.authsignal.KeyManager
+import com.authsignal.PinManager
+import com.authsignal.SdkErrorCodes
 import com.authsignal.Signer
 import com.authsignal.TokenCache
 import com.authsignal.inapp.api.InAppAPI
@@ -11,9 +14,11 @@ import java.security.Signature
 
 class AuthsignalInApp(
   tenantID: String,
-  baseURL: String) {
+  baseURL: String,
+  context: Context? = null) {
   private val api = InAppAPI(tenantID, baseURL)
   private val keyManager = KeyManager("in_app")
+  private val pinManager = PinManager(context = context)
 
   suspend fun getCredential(username: String? = null): AuthsignalResponse<AppCredential> {
     val publicKeyResponse = keyManager.getPublicKey(username)
@@ -108,5 +113,81 @@ class AuthsignalInApp(
     val userToken = if (action == null) TokenCache.shared.token else null
 
     return api.verify(challengeId, publicKey, signature, userToken)
+  }
+
+  suspend fun createPin(
+    pin: String,
+    username: String,
+    token: String? = null
+  ): AuthsignalResponse<AppCredential> {
+    if (!pinManager.validateFormat(pin)) {
+      return AuthsignalResponse(
+        error = "Invalid PIN format.",
+        errorCode = SdkErrorCodes.InvalidPinFormat
+      )
+    }
+
+    pinManager.createPin(pin, username)
+
+    return addCredential(token, username)
+  }
+
+  suspend fun verifyPin(
+    pin: String,
+    username: String,
+    action: String? = null
+  ): AuthsignalResponse<VerifyPinResponse> {
+    val pinResponse = pinManager.validatePin(pin, username)
+
+    val isPinValid = pinResponse.data ?: return AuthsignalResponse(
+      error = pinResponse.error,
+      errorCode = pinResponse.errorCode,
+    )
+
+    if (isPinValid) {
+      val verifyResponse = verify(action, username)
+
+      verifyResponse.error?.let { error ->
+        return AuthsignalResponse(
+          error = error,
+          errorCode = verifyResponse.errorCode
+        )
+      }
+
+      verifyResponse.data?.let { verifyResponseData ->
+        val data = VerifyPinResponse(
+          isVerified = true,
+          token = verifyResponseData.token,
+          userId = verifyResponseData.userId
+        )
+
+        return AuthsignalResponse(data = data)
+      }
+    }
+
+    val data = VerifyPinResponse(
+      isVerified = false,
+      token = null,
+      userId = null
+    )
+
+    return AuthsignalResponse(data = data)
+  }
+
+  suspend fun deletePin(username: String): AuthsignalResponse<Boolean> {
+    val pinManagerResponse = pinManager.deletePin(username)
+
+    if (pinManagerResponse.data != true) {
+      return AuthsignalResponse(
+        error = pinManagerResponse.error,
+        errorCode = pinManagerResponse.errorCode,
+      )
+    }
+
+    return removeCredential(username = username)
+  }
+
+  fun getAllUsernames(): AuthsignalResponse<List<String>> {
+    return pinManager.getAllUsernames()
   }
 }

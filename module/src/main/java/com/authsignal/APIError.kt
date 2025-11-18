@@ -57,4 +57,5 @@ object SdkErrorCodes {
   const val InvalidStateError = "invalid_state_error"
   const val DomError = "dom_error"
   const val InvalidCredential = "invalid_credential"
+  const val InvalidPinFormat = "invalid_pin_format"
 }
