@@ -102,6 +102,18 @@ class AuthsignalQRCode(
     return api.claimChallenge(challengeId, publicKey, signature)
   }
 
+  suspend fun getChallenge(): AuthsignalResponse<AppChallenge?> {
+    val publicKeyResponse = keyManager.getPublicKey()
+
+    val publicKey = publicKeyResponse.data
+      ?: return AuthsignalResponse(
+        error = publicKeyResponse.error,
+        errorCode = publicKeyResponse.errorCode
+      )
+
+    return api.getChallenge(publicKey)
+  }
+
   suspend fun updateChallenge(
     challengeId: String,
     approved: Boolean,

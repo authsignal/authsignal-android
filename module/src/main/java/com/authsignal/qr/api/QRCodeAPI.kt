@@ -58,6 +58,42 @@ class QRCodeAPI(tenantID: String, private val baseURL: String) {
     }
   }
 
+  suspend fun getChallenge(publicKey: String): AuthsignalResponse<AppChallenge?> {
+    val encodedKey = Encoder.toBase64String(publicKey.toByteArray())
+    val url = "$baseURL/client/user-authenticators/qr-code/challenge?publicKey=$encodedKey"
+
+    return try {
+      val response = client.get(url) {
+        headers {
+          append(HttpHeaders.Authorization, basicAuth)
+        }
+      }
+
+      if (response.status == HttpStatusCode.OK) {
+        val data = response.body<AppChallengeResponse>()
+
+        val challengeId = data.challengeId ?: return AuthsignalResponse(data = null)
+        val userId = data.userId ?: return AuthsignalResponse(data = null)
+
+        val appChallenge =  AppChallenge(
+          challengeId = challengeId,
+          userId = userId,
+          actionCode = data.actionCode,
+          idempotencyKey = data.idempotencyKey,
+          ipAddress = data.ipAddress,
+          userAgent = data.userAgent,
+          deviceId = data.deviceId,
+        )
+
+        return AuthsignalResponse(data = appChallenge)
+      } else {
+        APIError.mapToErrorResponse(response)
+      }
+    } catch (e: Exception) {
+      APIError.handleNetworkException(e)
+    }
+  }
+
   suspend fun addCredential(
     token: String,
     publicKey: String,
