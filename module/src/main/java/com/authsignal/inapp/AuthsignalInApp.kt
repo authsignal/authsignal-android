@@ -129,7 +129,7 @@ class AuthsignalInApp(
 
     pinManager.createPin(pin, username)
 
-    return addCredential(token, username)
+    return addCredential(token = token, username = username)
   }
 
   suspend fun verifyPin(
@@ -175,19 +175,21 @@ class AuthsignalInApp(
   }
 
   suspend fun deletePin(username: String): AuthsignalResponse<Boolean> {
-    val pinManagerResponse = pinManager.deletePin(username)
+    val removeCredentialResponse = removeCredential(username = username)
 
-    if (pinManagerResponse.data != true) {
+    if (removeCredentialResponse.data != true) {
       return AuthsignalResponse(
-        error = pinManagerResponse.error,
-        errorCode = pinManagerResponse.errorCode,
+        error = removeCredentialResponse.error,
+        errorCode = removeCredentialResponse.errorCode,
       )
     }
+    
+    pinManager.deletePin(username)
 
-    return removeCredential(username = username)
+    return removeCredentialResponse
   }
 
-  fun getAllUsernames(): AuthsignalResponse<List<String>> {
+  fun getAllPinUsernames(): AuthsignalResponse<List<String>> {
     return pinManager.getAllUsernames()
   }
 }
