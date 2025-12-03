@@ -89,9 +89,7 @@ class AuthsignalPasskey(
       )
 
     if (authenticatorData.isVerified) {
-      dataStore?.edit { settings ->
-        settings[passkeyCredentialIdPreferencesKey] = credential.rawId
-      }
+      storeCredentialId(credential.rawId, options.user.name)
     }
 
     val signUpResponse = SignUpResponse(
@@ -154,9 +152,7 @@ class AuthsignalPasskey(
       )
 
     if (verifyData.isVerified) {
-      dataStore?.edit { settings ->
-        settings[passkeyCredentialIdPreferencesKey] = credential.rawId
-      }
+      storeCredentialId(credential.rawId, verifyResponse.data.username)
     }
 
     verifyData.accessToken.let {
@@ -179,11 +175,9 @@ class AuthsignalPasskey(
     return Build.VERSION.SDK_INT >= 28
   }
 
-  suspend fun shouldPromptToCreatePasskey(): AuthsignalResponse<Boolean> {
-    val existingCredentialId = dataStore?.data
-      ?.map { preferences ->
-        preferences[passkeyCredentialIdPreferencesKey]
-      }?.first() ?: return AuthsignalResponse(data = true)
+  suspend fun shouldPromptToCreatePasskey(username: String? = null): AuthsignalResponse<Boolean> {
+    val existingCredentialId = getStoredCredentialId(username)
+      ?: return AuthsignalResponse(data = true)
 
     val passkeyAuthenticatorResponse =  api.getPasskeyAuthenticator(existingCredentialId)
 
@@ -228,5 +222,27 @@ class AuthsignalPasskey(
         preferences[defaultDeviceIdPreferencesKey] = newId
       }
     }
+  }
+
+  private suspend fun storeCredentialId(credentialId: String, username: String?) {
+    dataStore?.edit { settings ->
+      settings[passkeyCredentialIdPreferencesKey] = credentialId
+
+      username?.let {
+        settings[getCredentialIdKey(it)] = credentialId
+      }
+    }
+  }
+
+  private suspend fun getStoredCredentialId(username: String?): String? {
+    val key = getCredentialIdKey(username)
+
+    return dataStore?.data?.map { preferences -> preferences[key] }?.first()
+  }
+
+  private fun getCredentialIdKey(username: String?): Preferences.Key<String> {
+    return username?.let {
+      stringPreferencesKey("${passkeyCredentialIdPreferencesKey.name}_${it}")
+    } ?: passkeyCredentialIdPreferencesKey
   }
 }
