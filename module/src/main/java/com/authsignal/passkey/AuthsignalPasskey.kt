@@ -229,18 +229,20 @@ class AuthsignalPasskey(
       settings[passkeyCredentialIdPreferencesKey] = credentialId
 
       username?.let {
-        val userKey = stringPreferencesKey("${passkeyCredentialIdPreferencesKey}_${it}")
-
-        settings[userKey] = credentialId
+        settings[getCredentialIdKey(it)] = credentialId
       }
     }
   }
 
   private suspend fun getStoredCredentialId(username: String?): String? {
-    val key = username?.let {
-      stringPreferencesKey("${passkeyCredentialIdPreferencesKey}_${it}")
-    } ?: passkeyCredentialIdPreferencesKey
+    val key = getCredentialIdKey(username)
 
     return dataStore?.data?.map { preferences -> preferences[key] }?.first()
+  }
+
+  private fun getCredentialIdKey(username: String?): Preferences.Key<String> {
+    return username?.let {
+      stringPreferencesKey("${passkeyCredentialIdPreferencesKey.name}_${it}")
+    } ?: passkeyCredentialIdPreferencesKey
   }
 }
