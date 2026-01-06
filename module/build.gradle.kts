@@ -150,11 +150,14 @@ jreleaser {
 }
 
 dependencies {
-    implementation("io.ktor:ktor-client-android:2.2.4")
-    implementation("io.ktor:ktor-client-core:2.2.4")
-    implementation("io.ktor:ktor-client-content-negotiation:2.2.4")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:2.2.4")
+    implementation(platform("io.ktor:ktor-bom:2.2.4"))
+    implementation("io.ktor:ktor-client-android")
+    implementation("io.ktor:ktor-client-core")
+    implementation("io.ktor:ktor-client-content-negotiation")
+    implementation("io.ktor:ktor-serialization-kotlinx-json")
+
     implementation("androidx.credentials:credentials:1.5.0")
     implementation("androidx.credentials:credentials-play-services-auth:1.5.0")
+
     implementation("androidx.datastore:datastore-preferences:1.1.7")
 }
