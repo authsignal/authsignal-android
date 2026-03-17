@@ -10,6 +10,7 @@ import com.authsignal.TokenCache
 import com.authsignal.inapp.api.InAppAPI
 import com.authsignal.inapp.api.models.*
 import com.authsignal.models.*
+import com.authsignal.models.api.AppAttestation
 import java.security.Signature
 
 class AuthsignalInApp(
@@ -39,6 +40,7 @@ class AuthsignalInApp(
     timeout: Int = 0,
     authorizationType: Int = 0,
     username: String? = null,
+    appAttestation: AppAttestation? = null,
   ): AuthsignalResponse<AppCredential> {
     val userToken = token ?: TokenCache.shared.token ?: return TokenCache.shared.handleTokenNotSetError()
 
@@ -56,7 +58,7 @@ class AuthsignalInApp(
 
     val device = deviceName ?: DeviceUtils.getDeviceName()
 
-    return api.addCredential(userToken, publicKey, device)
+    return api.addCredential(userToken, publicKey, device, appAttestation)
   }
 
   suspend fun removeCredential(
