@@ -61,12 +61,14 @@ class InAppAPI(tenantID: String, private val baseURL: String) {
   suspend fun addCredential(
     token: String,
     publicKey: String,
-    deviceName: String = ""): AuthsignalResponse<AppCredential> {
+    deviceName: String = "",
+    appAttestation: AppAttestation? = null): AuthsignalResponse<AppCredential> {
     val url = "$baseURL/client/user-authenticators/in-app"
     val body = AddAppCredentialRequest(
       publicKey,
       deviceName,
       devicePlatform = "android",
+      appAttestation = appAttestation,
     )
 
     return try {
