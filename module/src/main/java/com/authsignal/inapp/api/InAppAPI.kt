@@ -68,7 +68,9 @@ class InAppAPI(tenantID: String, private val baseURL: String) {
       publicKey,
       deviceName,
       devicePlatform = "android",
-      appAttestation = appAttestation,
+      appAttestation = appAttestation?.let {
+        AddAppCredentialAppAttestation(provider = "PLAY_INTEGRITY", token = it.token, keyId = it.keyId)
+      },
     )
 
     return try {
