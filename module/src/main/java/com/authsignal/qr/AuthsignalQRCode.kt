@@ -1,9 +1,13 @@
 package com.authsignal.qr
 
+import android.content.Context
 import com.authsignal.DeviceUtils
+import com.authsignal.Encoder
 import com.authsignal.KeyManager
+import com.authsignal.SdkErrorCodes
 import com.authsignal.Signer
 import com.authsignal.TokenCache
+import com.authsignal.inapp.PlayIntegrityManager
 import com.authsignal.models.*
 import com.authsignal.qr.api.QRCodeAPI
 import com.authsignal.qr.api.models.ClaimChallengeResponse
@@ -11,9 +15,11 @@ import java.security.Signature
 
 class AuthsignalQRCode(
   tenantID: String,
-  baseURL: String) {
+  baseURL: String,
+  context: Context? = null) {
   private val api = QRCodeAPI(tenantID, baseURL)
   private val keyManager = KeyManager("qr_code")
+  private val playIntegrityManager = PlayIntegrityManager(context)
 
   suspend fun getCredential(): AuthsignalResponse<AppCredential> {
     val publicKeyResponse = keyManager.getPublicKey()
@@ -33,6 +39,7 @@ class AuthsignalQRCode(
     userAuthenticationRequired: Boolean = false,
     timeout: Int = 0,
     authorizationType: Int = 0,
+    appAttestation: Boolean = false,
   ): AuthsignalResponse<AppCredential> {
     val userToken = token ?: TokenCache.shared.token ?: return TokenCache.shared.handleTokenNotSetError()
 
@@ -49,7 +56,24 @@ class AuthsignalQRCode(
 
     val device = deviceName ?: DeviceUtils.getDeviceName()
 
-    return api.addCredential(userToken, publicKey, device)
+    var appAttestationToken: String? = null
+
+    if (appAttestation) {
+      val nonce = Encoder.getJwtClaim(userToken, "idempotencyKey")
+        ?: return AuthsignalResponse(
+          error = "Failed to extract idempotencyKey from token.",
+          errorCode = SdkErrorCodes.SdkError,
+        )
+
+      val integrityResponse = playIntegrityManager.requestToken(nonce)
+
+      appAttestationToken = integrityResponse.data ?: return AuthsignalResponse(
+        error = integrityResponse.error,
+        errorCode = integrityResponse.errorCode,
+      )
+    }
+
+    return api.addCredential(userToken, publicKey, device, appAttestationToken)
   }
 
   suspend fun removeCredential(signer: Signature? = null): AuthsignalResponse<Boolean> {

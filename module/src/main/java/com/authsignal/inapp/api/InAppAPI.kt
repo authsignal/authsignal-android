@@ -62,14 +62,14 @@ class InAppAPI(tenantID: String, private val baseURL: String) {
     token: String,
     publicKey: String,
     deviceName: String = "",
-    appAttestation: AppAttestation? = null): AuthsignalResponse<AppCredential> {
+    appAttestationToken: String? = null): AuthsignalResponse<AppCredential> {
     val url = "$baseURL/client/user-authenticators/in-app"
     val body = AddAppCredentialRequest(
       publicKey,
       deviceName,
       devicePlatform = "android",
-      appAttestation = appAttestation?.let {
-        AddAppCredentialAppAttestation(provider = "PLAY_INTEGRITY", token = it.token, keyId = it.keyId)
+      appAttestation = appAttestationToken?.let {
+        AddAppCredentialAppAttestation(provider = "PLAY_INTEGRITY", token = it)
       },
     )
 

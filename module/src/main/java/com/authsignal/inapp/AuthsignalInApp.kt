@@ -2,6 +2,7 @@ package com.authsignal.inapp
 
 import android.content.Context
 import com.authsignal.DeviceUtils
+import com.authsignal.Encoder
 import com.authsignal.KeyManager
 import com.authsignal.PinManager
 import com.authsignal.SdkErrorCodes
@@ -10,7 +11,6 @@ import com.authsignal.TokenCache
 import com.authsignal.inapp.api.InAppAPI
 import com.authsignal.inapp.api.models.*
 import com.authsignal.models.*
-import com.authsignal.models.api.AppAttestation
 import java.security.Signature
 
 class AuthsignalInApp(
@@ -20,6 +20,7 @@ class AuthsignalInApp(
   private val api = InAppAPI(tenantID, baseURL)
   private val keyManager = KeyManager("in_app")
   private val pinManager = PinManager(context = context)
+  private val playIntegrityManager = PlayIntegrityManager(context)
 
   suspend fun getCredential(username: String? = null): AuthsignalResponse<AppCredential> {
     val publicKeyResponse = keyManager.getPublicKey(username)
@@ -40,7 +41,7 @@ class AuthsignalInApp(
     timeout: Int = 0,
     authorizationType: Int = 0,
     username: String? = null,
-    appAttestation: AppAttestation? = null,
+    appAttestation: Boolean = false,
   ): AuthsignalResponse<AppCredential> {
     val userToken = token ?: TokenCache.shared.token ?: return TokenCache.shared.handleTokenNotSetError()
 
@@ -58,7 +59,24 @@ class AuthsignalInApp(
 
     val device = deviceName ?: DeviceUtils.getDeviceName()
 
-    return api.addCredential(userToken, publicKey, device, appAttestation)
+    var appAttestationToken: String? = null
+
+    if (appAttestation) {
+      val nonce = Encoder.getJwtClaim(userToken, "idempotencyKey")
+        ?: return AuthsignalResponse(
+          error = "Failed to extract idempotencyKey from token.",
+          errorCode = SdkErrorCodes.SdkError,
+        )
+
+      val integrityResponse = playIntegrityManager.requestToken(nonce)
+
+      appAttestationToken = integrityResponse.data ?: return AuthsignalResponse(
+        error = integrityResponse.error,
+        errorCode = integrityResponse.errorCode,
+      )
+    }
+
+    return api.addCredential(userToken, publicKey, device, appAttestationToken)
   }
 
   suspend fun removeCredential(
