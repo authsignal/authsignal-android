@@ -1,9 +1,13 @@
 package com.authsignal.push
 
+import android.content.Context
 import com.authsignal.DeviceUtils
+import com.authsignal.Encoder
 import com.authsignal.KeyManager
+import com.authsignal.SdkErrorCodes
 import com.authsignal.Signer
 import com.authsignal.TokenCache
+import com.authsignal.inapp.PlayIntegrityManager
 import com.authsignal.models.AuthsignalResponse
 import com.authsignal.push.api.PushAPI
 import com.authsignal.models.AppChallenge
@@ -12,9 +16,11 @@ import java.security.Signature
 
 class AuthsignalPush(
   tenantID: String,
-  baseURL: String) {
+  baseURL: String,
+  context: Context? = null) {
   private val api = PushAPI(tenantID, baseURL)
   private val keyManager = KeyManager("push")
+  private val playIntegrityManager = PlayIntegrityManager(context)
 
   suspend fun getCredential(): AuthsignalResponse<AppCredential> {
     val publicKeyResponse = keyManager.getPublicKey()
@@ -34,6 +40,7 @@ class AuthsignalPush(
     userAuthenticationRequired: Boolean = false,
     timeout: Int = 0,
     authorizationType: Int = 0,
+    appAttestation: Boolean = false,
   ): AuthsignalResponse<AppCredential> {
     val userToken = token ?: TokenCache.shared.token ?: return TokenCache.shared.handleTokenNotSetError()
 
@@ -50,7 +57,24 @@ class AuthsignalPush(
 
     val device = deviceName ?: DeviceUtils.getDeviceName()
 
-    return api.addCredential(userToken, publicKey, device)
+    var appAttestationToken: String? = null
+
+    if (appAttestation) {
+      val nonce = Encoder.getJwtClaim(userToken, "idempotencyKey")
+        ?: return AuthsignalResponse(
+          error = "Failed to extract idempotencyKey from token.",
+          errorCode = SdkErrorCodes.SdkError,
+        )
+
+      val integrityResponse = playIntegrityManager.requestToken(nonce)
+
+      appAttestationToken = integrityResponse.data ?: return AuthsignalResponse(
+        error = integrityResponse.error,
+        errorCode = integrityResponse.errorCode,
+      )
+    }
+
+    return api.addCredential(userToken, publicKey, device, appAttestationToken)
   }
 
   suspend fun removeCredential(signer: Signature? = null): AuthsignalResponse<Boolean> {

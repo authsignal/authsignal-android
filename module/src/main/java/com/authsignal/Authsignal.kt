@@ -19,8 +19,8 @@ class Authsignal(
   deviceId: String? = null,
 ) {
   val passkey = AuthsignalPasskey(tenantID = tenantID, baseURL = baseURL, activity = activity, deviceId = deviceId)
-  val push = AuthsignalPush(tenantID = tenantID, baseURL = baseURL)
-  val qr = AuthsignalQRCode(tenantID = tenantID, baseURL = baseURL)
+  val push = AuthsignalPush(tenantID = tenantID, baseURL = baseURL, context = context)
+  val qr = AuthsignalQRCode(tenantID = tenantID, baseURL = baseURL, context = context)
   val inapp = AuthsignalInApp(tenantID = tenantID, baseURL = baseURL, context = context)
   val email = AuthsignalEmail(tenantID = tenantID, baseURL = baseURL)
   val sms = AuthsignalSMS(tenantID = tenantID, baseURL = baseURL)

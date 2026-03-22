@@ -61,12 +61,16 @@ class QRCodeAPI(tenantID: String, private val baseURL: String) {
   suspend fun addCredential(
     token: String,
     publicKey: String,
-    deviceName: String = ""): AuthsignalResponse<AppCredential> {
+    deviceName: String = "",
+    appAttestationToken: String? = null): AuthsignalResponse<AppCredential> {
     val url = "$baseURL/client/user-authenticators/qr-code"
     val body = AddAppCredentialRequest(
       publicKey,
       deviceName,
       devicePlatform = "android",
+      appAttestation = appAttestationToken?.let {
+        AddAppCredentialAppAttestation(provider = "PLAY_INTEGRITY", token = it)
+      },
     )
 
     return try {
