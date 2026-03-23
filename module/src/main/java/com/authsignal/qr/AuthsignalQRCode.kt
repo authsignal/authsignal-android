@@ -39,7 +39,7 @@ class AuthsignalQRCode(
     userAuthenticationRequired: Boolean = false,
     timeout: Int = 0,
     authorizationType: Int = 0,
-    appAttestation: Boolean = false,
+    deviceIntegrity: Boolean = false,
   ): AuthsignalResponse<AppCredential> {
     val userToken = token ?: TokenCache.shared.token ?: return TokenCache.shared.handleTokenNotSetError()
 
@@ -56,9 +56,9 @@ class AuthsignalQRCode(
 
     val device = deviceName ?: DeviceUtils.getDeviceName()
 
-    var appAttestationToken: String? = null
+    var deviceIntegrityToken: String? = null
 
-    if (appAttestation) {
+    if (deviceIntegrity) {
       val nonce = Encoder.getJwtClaim(userToken, "idempotencyKey")
         ?: return AuthsignalResponse(
           error = "Failed to extract idempotencyKey from token.",
@@ -67,13 +67,13 @@ class AuthsignalQRCode(
 
       val integrityResponse = playIntegrityManager.requestToken(nonce)
 
-      appAttestationToken = integrityResponse.data ?: return AuthsignalResponse(
+      deviceIntegrityToken = integrityResponse.data ?: return AuthsignalResponse(
         error = integrityResponse.error,
         errorCode = integrityResponse.errorCode,
       )
     }
 
-    return api.addCredential(userToken, publicKey, device, appAttestationToken)
+    return api.addCredential(userToken, publicKey, device, deviceIntegrityToken)
   }
 
   suspend fun removeCredential(signer: Signature? = null): AuthsignalResponse<Boolean> {
