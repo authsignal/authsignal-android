@@ -12,7 +12,7 @@ class PlayIntegrityManager(private val context: Context?) {
   suspend fun requestToken(nonce: String): AuthsignalResponse<String> {
     val ctx = context
       ?: return AuthsignalResponse(
-        error = "Context is required for app attestation.",
+        error = "Context is required for device integrity.",
         errorCode = "sdk_error",
       )
 
