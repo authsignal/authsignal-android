@@ -15,7 +15,9 @@ object Encoder {
     return try {
       val payload = String(Base64.decode(parts[1], Base64.URL_SAFE or Base64.NO_WRAP))
       val json = JSONObject(payload)
-      if (json.has(claim)) json.getString(claim) else null
+      if (json.has(claim)) json.getString(claim)
+      else if (json.has("other")) json.getJSONObject("other").optString(claim, null)
+      else null
     } catch (_: Exception) {
       null
     }
