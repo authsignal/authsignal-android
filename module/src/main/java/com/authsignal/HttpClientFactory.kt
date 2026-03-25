@@ -18,9 +18,9 @@ object HttpClientFactory {
         })
       }
       install(UserAgent) {
-        agent = "AuthsignalAndroidSDK/${BuildConfig.VERSION_NAME} " +
-          "Android/${Build.VERSION.RELEASE} " +
-          "(${Build.MANUFACTURER}; ${Build.MODEL})"
+        agent = "Mozilla/5.0 (Linux; Android ${Build.VERSION.RELEASE}; " +
+          "${Build.MANUFACTURER} ${Build.MODEL}) " +
+          "AuthsignalAndroidSDK/${BuildConfig.VERSION_NAME}"
       }
     }
   }
