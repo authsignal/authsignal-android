@@ -2,30 +2,19 @@ package com.authsignal.sms.api
 
 import com.authsignal.APIError
 import com.authsignal.Encoder
+import com.authsignal.HttpClientFactory
 import com.authsignal.sms.api.models.*
 import com.authsignal.models.AuthsignalResponse
 import com.authsignal.models.ChallengeResponse
 import com.authsignal.models.EnrollResponse
 import com.authsignal.models.VerifyRequest
 import com.authsignal.models.VerifyResponse
-import io.ktor.client.*
 import io.ktor.client.call.*
-import io.ktor.client.engine.android.*
 import io.ktor.client.request.*
-import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
-import kotlinx.serialization.json.Json
 
 class SMSAPI(tenantID: String, private val baseURL: String) {
-  private val client = HttpClient(Android) {
-    install(ContentNegotiation) {
-      json(Json {
-        prettyPrint = true
-        ignoreUnknownKeys = true
-      })
-    }
-  }
+  private val client = HttpClientFactory.create()
 
   private val basicAuth = "Basic ${Encoder.toBase64String("$tenantID:".toByteArray())}"
 
