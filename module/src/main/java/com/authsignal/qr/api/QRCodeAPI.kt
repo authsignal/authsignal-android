@@ -2,29 +2,18 @@ package com.authsignal.qr.api
 
 import com.authsignal.APIError
 import com.authsignal.Encoder
+import com.authsignal.HttpClientFactory
 import com.authsignal.models.AuthsignalResponse
 import com.authsignal.models.api.*
 import com.authsignal.models.*
 import com.authsignal.qr.api.models.ClaimChallengeRequest
 import com.authsignal.qr.api.models.ClaimChallengeResponse
-import io.ktor.client.*
 import io.ktor.client.call.*
-import io.ktor.client.engine.android.*
 import io.ktor.client.request.*
-import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
-import kotlinx.serialization.json.Json
 
 class QRCodeAPI(tenantID: String, private val baseURL: String) {
-  private val client = HttpClient(Android) {
-    install(ContentNegotiation) {
-      json(Json {
-        prettyPrint = true
-        ignoreUnknownKeys = true
-      })
-    }
-  }
+  private val client = HttpClientFactory.create()
 
   private val basicAuth = "Basic ${Encoder.toBase64String("$tenantID:".toByteArray())}"
 
