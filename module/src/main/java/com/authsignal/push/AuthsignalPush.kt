@@ -40,7 +40,7 @@ class AuthsignalPush(
     userAuthenticationRequired: Boolean = false,
     timeout: Int = 0,
     authorizationType: Int = 0,
-    deviceIntegrity: Boolean = false,
+    performAttestation: Boolean = false,
   ): AuthsignalResponse<AppCredential> {
     val userToken = token ?: TokenCache.shared.token ?: return TokenCache.shared.handleTokenNotSetError()
 
@@ -59,7 +59,7 @@ class AuthsignalPush(
 
     var deviceIntegrityToken: String? = null
 
-    if (deviceIntegrity) {
+    if (performAttestation) {
       val nonce = Encoder.getJwtClaim(userToken, "idempotencyKey")
         ?: return AuthsignalResponse(
           error = "Failed to extract idempotencyKey from token.",
