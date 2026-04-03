@@ -1,15 +1,14 @@
 package com.authsignal.passkey
 
 import android.app.Activity
-import android.content.Context
 import android.os.Build
-import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
+import com.authsignal.DeviceCache
 import com.authsignal.SdkErrorCodes
 import com.authsignal.TokenCache
+import com.authsignal.dataStore
 import com.authsignal.models.AuthsignalResponse
 import com.authsignal.passkey.api.*
 import com.authsignal.passkey.models.*
@@ -17,11 +16,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import java.util.UUID
 
-private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 private val passkeyCredentialIdPreferencesKey = stringPreferencesKey("@as_passkey_credential_id")
-private val defaultDeviceIdPreferencesKey = stringPreferencesKey("@as_device_id")
 
 class AuthsignalPasskey(
   tenantID: String,
@@ -32,6 +28,12 @@ class AuthsignalPasskey(
   private val manager = PasskeyManager(activity)
   private val cache = TokenCache.shared
   private val dataStore = activity?.applicationContext?.dataStore
+
+  init {
+    activity?.applicationContext?.let {
+      DeviceCache.shared.initialize(it, deviceId)
+    }
+  }
 
   suspend fun signUp(
     token: String? = null,
@@ -73,7 +75,7 @@ class AuthsignalPasskey(
       errorCode = registerResponse.errorCode
     )
 
-    val deviceId = deviceId ?: getDefaultDeviceId()
+    val deviceId = deviceId ?: DeviceCache.shared.getDefaultDeviceId()
 
     val addAuthenticatorResponse = api.addAuthenticator(
       userToken,
@@ -136,7 +138,7 @@ class AuthsignalPasskey(
       errorCode = authResponse.errorCode,
     )
 
-    val deviceId =  deviceId ?: getDefaultDeviceId()
+    val deviceId = deviceId ?: DeviceCache.shared.getDefaultDeviceId()
 
     val verifyResponse = api.verify(
       optsData.challengeId,
@@ -208,20 +210,6 @@ class AuthsignalPasskey(
       }?.first() ?: false
 
     return AuthsignalResponse(data = hasPasskeyCredentialAvailable)
-  }
-
-  private suspend fun getDefaultDeviceId(): String {
-    val store = dataStore ?: return ""
-
-    val defaultDeviceId = store.data
-      .map { preferences -> preferences[defaultDeviceIdPreferencesKey] }
-      .first()
-
-    return defaultDeviceId ?: UUID.randomUUID().toString().also { newId ->
-      store.edit { preferences ->
-        preferences[defaultDeviceIdPreferencesKey] = newId
-      }
-    }
   }
 
   private suspend fun storeCredentialId(credentialId: String, username: String?) {

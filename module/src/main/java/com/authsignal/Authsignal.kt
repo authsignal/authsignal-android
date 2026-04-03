@@ -27,11 +27,22 @@ class Authsignal(
   val whatsapp = AuthsignalWhatsApp(tenantID = tenantID, baseURL = baseURL)
   val totp = AuthsignalTOTP(tenantID = tenantID, baseURL = baseURL)
 
+  init {
+    val ctx = context ?: activity?.applicationContext
+    if (ctx != null) {
+      DeviceCache.shared.initialize(ctx, deviceId)
+    }
+  }
+
   fun setToken(token: String) {
     TokenCache.shared.token = token
   }
 
   fun clearToken() {
     TokenCache.shared.token = null
+  }
+
+  suspend fun getDeviceId(): String {
+    return DeviceCache.shared.getDefaultDeviceId()
   }
 }
