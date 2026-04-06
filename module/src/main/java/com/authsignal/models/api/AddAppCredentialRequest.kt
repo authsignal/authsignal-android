@@ -7,7 +7,7 @@ data class AddAppCredentialRequest(
   val publicKey: String,
   val deviceName: String,
   val devicePlatform: String,
-  val deviceIntegrity: AddAppCredentialDeviceIntegrity? = null,
+  val performAttestation: AddAppCredentialDeviceIntegrity? = null,
 )
 
 @Serializable

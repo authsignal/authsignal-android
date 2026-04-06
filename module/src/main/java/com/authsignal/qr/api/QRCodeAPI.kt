@@ -57,7 +57,7 @@ class QRCodeAPI(tenantID: String, private val baseURL: String) {
       publicKey,
       deviceName,
       devicePlatform = "android",
-      deviceIntegrity = deviceIntegrityToken?.let {
+      performAttestation = deviceIntegrityToken?.let {
         AddAppCredentialDeviceIntegrity(provider = "PLAY_INTEGRITY", token = it)
       },
     )
