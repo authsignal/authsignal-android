@@ -120,7 +120,10 @@ class InAppAPI(tenantID: String, private val baseURL: String) {
     }
   }
 
-  suspend fun challenge(action: String?): AuthsignalResponse<ChallengeResponse> {
+  suspend fun challenge(
+    action: String? = null,
+    token: String? = null,
+  ): AuthsignalResponse<ChallengeResponse> {
     val url = "$baseURL/client/challenge"
     val body = action?.let { ChallengeRequest(it) }
 
@@ -130,7 +133,10 @@ class InAppAPI(tenantID: String, private val baseURL: String) {
         setBody(body)
 
         headers {
-          append(HttpHeaders.Authorization, basicAuth)
+          append(
+            HttpHeaders.Authorization,
+            if (token == null) basicAuth else "Bearer $token",
+          )
         }
       }
 
