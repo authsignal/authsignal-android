@@ -120,6 +120,32 @@ class QRCodeAPI(tenantID: String, private val baseURL: String) {
     }
   }
 
+  suspend fun challenge(token: String): AuthsignalResponse<ChallengeResponse> {
+    val url = "$baseURL/client/challenge"
+    val body = ChallengeRequest(action = null)
+
+    return try {
+      val response = client.post(url) {
+        contentType(ContentType.Application.Json)
+        setBody(body)
+
+        headers {
+          append(HttpHeaders.Authorization, "Bearer $token")
+        }
+      }
+
+      if (response.status == HttpStatusCode.OK) {
+        val data = response.body<ChallengeResponse>()
+
+        AuthsignalResponse(data = data)
+      } else {
+        APIError.mapToErrorResponse(response)
+      }
+    } catch (e: Exception) {
+      APIError.handleNetworkException(e)
+    }
+  }
+
   suspend fun claimChallenge(
     challengeId: String,
     publicKey: String,

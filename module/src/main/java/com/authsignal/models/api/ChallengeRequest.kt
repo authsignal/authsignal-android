@@ -4,5 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ChallengeRequest(
-  val action: String,
+  val action: String? = null,
 )

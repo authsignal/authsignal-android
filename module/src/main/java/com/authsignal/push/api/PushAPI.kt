@@ -117,6 +117,32 @@ class PushAPI(tenantID: String, private val baseURL: String) {
     }
   }
 
+  suspend fun challenge(token: String): AuthsignalResponse<ChallengeResponse> {
+    val url = "$baseURL/client/challenge"
+    val body = ChallengeRequest(action = null)
+
+    return try {
+      val response = client.post(url) {
+        contentType(ContentType.Application.Json)
+        setBody(body)
+
+        headers {
+          append(HttpHeaders.Authorization, "Bearer $token")
+        }
+      }
+
+      if (response.status == HttpStatusCode.OK) {
+        val data = response.body<ChallengeResponse>()
+
+        AuthsignalResponse(data = data)
+      } else {
+        APIError.mapToErrorResponse(response)
+      }
+    } catch (e: Exception) {
+      APIError.handleNetworkException(e)
+    }
+  }
+
   suspend fun getChallenge(publicKey: String): AuthsignalResponse<AppChallenge?> {
     val encodedKey = Encoder.toBase64String(publicKey.toByteArray())
     val url = "$baseURL/client/user-authenticators/push/challenge?publicKey=$encodedKey"
