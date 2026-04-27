@@ -1,8 +1,8 @@
 package com.authsignal.inapp.api
 
 import com.authsignal.APIError
+import com.authsignal.BaseAPI
 import com.authsignal.Encoder
-import com.authsignal.HttpClientFactory
 import com.authsignal.inapp.api.models.InAppVerifyRequest
 import com.authsignal.inapp.api.models.InAppVerifyResponse
 import com.authsignal.models.AuthsignalResponse
@@ -12,10 +12,7 @@ import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 
-class InAppAPI(tenantID: String, private val baseURL: String) {
-  private val client = HttpClientFactory.create()
-
-  private val basicAuth = "Basic ${Encoder.toBase64String("$tenantID:".toByteArray())}"
+class InAppAPI(tenantID: String, baseURL: String) : BaseAPI(tenantID, baseURL) {
 
   suspend fun getCredential(publicKey: String): AuthsignalResponse<AppCredential> {
     val encodedKey = Encoder.toBase64String(publicKey.toByteArray())
@@ -112,38 +109,6 @@ class InAppAPI(tenantID: String, private val baseURL: String) {
 
       return if (success) {
         AuthsignalResponse(data = true)
-      } else {
-        APIError.mapToErrorResponse(response)
-      }
-    } catch (e: Exception) {
-      APIError.handleNetworkException(e)
-    }
-  }
-
-  suspend fun challenge(
-    action: String? = null,
-    token: String? = null,
-  ): AuthsignalResponse<ChallengeResponse> {
-    val url = "$baseURL/client/challenge"
-    val body = action?.let { ChallengeRequest(it) }
-
-    return try {
-      val response = client.post(url) {
-        contentType(ContentType.Application.Json)
-        setBody(body)
-
-        headers {
-          append(
-            HttpHeaders.Authorization,
-            if (token == null) basicAuth else "Bearer $token",
-          )
-        }
-      }
-
-      if (response.status == HttpStatusCode.OK) {
-        val data = response.body<ChallengeResponse>()
-
-        AuthsignalResponse(data = data)
       } else {
         APIError.mapToErrorResponse(response)
       }

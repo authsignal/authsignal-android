@@ -58,7 +58,7 @@ class AuthsignalQRCode(
     var deviceIntegrityToken: String? = null
 
     if (performAttestation) {
-      val challengeResponse = api.challenge(userToken)
+      val challengeResponse = api.challenge(token = userToken)
 
       val nonce = challengeResponse.data?.nonce
         ?: return AuthsignalResponse(
