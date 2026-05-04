@@ -2,7 +2,6 @@ package com.authsignal.qr
 
 import android.content.Context
 import com.authsignal.DeviceUtils
-import com.authsignal.Encoder
 import com.authsignal.KeyManager
 import com.authsignal.SdkErrorCodes
 import com.authsignal.Signer
@@ -59,10 +58,12 @@ class AuthsignalQRCode(
     var deviceIntegrityToken: String? = null
 
     if (performAttestation) {
-      val nonce = Encoder.getJwtClaim(userToken, "idempotencyKey")
+      val challengeResponse = api.challenge(token = userToken)
+
+      val nonce = challengeResponse.data?.nonce
         ?: return AuthsignalResponse(
-          error = "Failed to extract idempotencyKey from token.",
-          errorCode = SdkErrorCodes.SdkError,
+          error = challengeResponse.error ?: "Failed to get nonce from challenge.",
+          errorCode = challengeResponse.errorCode ?: SdkErrorCodes.SdkError,
         )
 
       val integrityResponse = playIntegrityManager.requestToken(nonce)
