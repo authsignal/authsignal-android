@@ -45,7 +45,8 @@ class PushAPI(tenantID: String, baseURL: String) : BaseAPI(tenantID, baseURL) {
     token: String,
     publicKey: String,
     deviceName: String = "",
-    deviceIntegrityToken: String? = null): AuthsignalResponse<AppCredential> {
+    deviceIntegrityToken: String? = null,
+    pushToken: String? = null): AuthsignalResponse<AppCredential> {
     val url = "$baseURL/client/user-authenticators/push"
     val body = AddAppCredentialRequest(
       publicKey,
@@ -54,6 +55,7 @@ class PushAPI(tenantID: String, baseURL: String) : BaseAPI(tenantID, baseURL) {
       performAttestation = deviceIntegrityToken?.let {
         AddAppCredentialDeviceIntegrity(provider = "PLAY_INTEGRITY", token = it)
       },
+      pushToken = pushToken,
     )
 
     return try {
