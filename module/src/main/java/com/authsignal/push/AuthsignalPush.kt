@@ -40,6 +40,7 @@ class AuthsignalPush(
     timeout: Int = 0,
     authorizationType: Int = 0,
     performAttestation: Boolean = false,
+    pushToken: String? = null,
   ): AuthsignalResponse<AppCredential> {
     val userToken = token ?: TokenCache.shared.token ?: return TokenCache.shared.handleTokenNotSetError()
 
@@ -75,7 +76,7 @@ class AuthsignalPush(
       )
     }
 
-    return api.addCredential(userToken, publicKey, device, deviceIntegrityToken)
+    return api.addCredential(userToken, publicKey, device, deviceIntegrityToken, pushToken)
   }
 
   suspend fun removeCredential(signer: Signature? = null): AuthsignalResponse<Boolean> {

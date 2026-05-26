@@ -8,6 +8,7 @@ data class AddAppCredentialRequest(
   val deviceName: String,
   val devicePlatform: String,
   val performAttestation: AddAppCredentialDeviceIntegrity? = null,
+  val pushToken: String? = null,
 )
 
 @Serializable
