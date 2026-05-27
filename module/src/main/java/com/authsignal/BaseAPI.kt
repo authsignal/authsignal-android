@@ -8,7 +8,7 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 
 abstract class BaseAPI(tenantID: String, protected val baseURL: String) {
-  protected val client = HttpClientFactory.create()
+  protected val client = HttpClientFactory.create(tenantID)
 
   protected val basicAuth = "Basic ${Encoder.toBase64String("$tenantID:".toByteArray())}"
 

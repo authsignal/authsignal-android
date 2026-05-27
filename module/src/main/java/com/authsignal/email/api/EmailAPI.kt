@@ -16,7 +16,7 @@ import io.ktor.http.*
 private const val TAG = "com.authsignal.email.api"
 
 class EmailAPI(tenantID: String, private val baseURL: String) {
-  private val client = HttpClientFactory.create()
+  private val client = HttpClientFactory.create(tenantID)
 
   private val basicAuth = "Basic ${Encoder.toBase64String("$tenantID:".toByteArray())}"
 
