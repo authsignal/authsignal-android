@@ -12,7 +12,7 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 
 class TOTPAPI(tenantID: String, private val baseURL: String) {
-  private val client = HttpClientFactory.create()
+  private val client = HttpClientFactory.create(tenantID)
 
   private val basicAuth = "Basic ${Encoder.toBase64String("$tenantID:".toByteArray())}"
 
