@@ -92,6 +92,26 @@ class PasskeyAPI(tenantID: String, private val baseURL: String) {
     }
   }
 
+  suspend fun getAuthenticators(token: String): AuthsignalResponse<List<Authenticator>> {
+    val url = "$baseURL/client/user-authenticators"
+
+    return try {
+      val response = client.get(url) {
+        headers {
+          append(HttpHeaders.Authorization, "Bearer $token")
+        }
+      }
+
+      if (response.status == HttpStatusCode.OK) {
+        AuthsignalResponse(data = response.body<List<Authenticator>>())
+      } else {
+        APIError.mapToErrorResponse(response)
+      }
+    } catch (e: Exception) {
+      APIError.handleNetworkException(e)
+    }
+  }
+
   private suspend inline fun <reified TRequest, reified TResponse>postRequest(
     url: String,
     body: TRequest,
