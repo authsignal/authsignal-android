@@ -1,6 +1,8 @@
 package com.authsignal.models.api
 
+import com.authsignal.models.ChallengeUser
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonObject
 
 @Serializable
 data class AppChallengeResponse(
@@ -12,4 +14,6 @@ data class AppChallengeResponse(
   val userAgent: String? = null,
   val deviceId: String? = null,
   val ipAddress: String? = null,
+  val custom: JsonObject? = null,
+  val user: ChallengeUser? = null,
 )

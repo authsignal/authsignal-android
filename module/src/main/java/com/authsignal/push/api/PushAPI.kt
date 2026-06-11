@@ -141,6 +141,8 @@ class PushAPI(tenantID: String, baseURL: String) : BaseAPI(tenantID, baseURL) {
           ipAddress = data.ipAddress,
           userAgent = data.userAgent,
           deviceId = data.deviceId,
+          custom = data.custom,
+          user = data.user,
         )
 
         return AuthsignalResponse(data = appChallenge)
