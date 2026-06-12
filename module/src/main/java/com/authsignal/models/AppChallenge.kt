@@ -1,6 +1,7 @@
 package com.authsignal.models
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonObject
 
 @Serializable
 data class AppChallenge(
@@ -11,4 +12,6 @@ data class AppChallenge(
   val deviceId: String?,
   val userAgent: String?,
   val ipAddress: String?,
+  val custom: JsonObject? = null,
+  val user: ChallengeUser? = null,
 )

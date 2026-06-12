@@ -107,7 +107,7 @@ class AuthsignalPush(
     )
   }
 
-  suspend fun getChallenge(): AuthsignalResponse<AppChallenge?> {
+  suspend fun getChallenge(signer: Signature? = null): AuthsignalResponse<AppChallenge?> {
     val publicKeyResponse = keyManager.getPublicKey()
 
     val publicKey = publicKeyResponse.data
@@ -116,7 +116,26 @@ class AuthsignalPush(
         errorCode = publicKeyResponse.errorCode
       )
 
-    return api.getChallenge(publicKey)
+    val nonceResponse = api.getChallengeSignNonce(publicKey)
+
+    val nonce = nonceResponse.data?.message
+      ?: return api.getChallenge(publicKey)
+
+    val signatureResponse = if (signer != null) {
+      Signer.finishSigning(nonce, signer)
+    } else {
+      val keyResponse = keyManager.getKey()
+
+      val key = keyResponse.data
+        ?: return api.getChallenge(publicKey)
+
+      Signer.sign(nonce, key)
+    }
+
+    val signature = signatureResponse.data
+      ?: return api.getChallenge(publicKey)
+
+    return api.getChallenge(publicKey, signature)
   }
 
   suspend fun updateChallenge(

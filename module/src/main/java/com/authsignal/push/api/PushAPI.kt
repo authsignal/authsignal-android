@@ -116,7 +116,30 @@ class PushAPI(tenantID: String, baseURL: String) : BaseAPI(tenantID, baseURL) {
     }
   }
 
-  suspend fun getChallenge(publicKey: String): AuthsignalResponse<AppChallenge?> {
+  suspend fun getChallengeSignNonce(publicKey: String): AuthsignalResponse<AppChallengeSignResponse> {
+    val encodedKey = Encoder.toBase64String(publicKey.toByteArray())
+    val url = "$baseURL/client/user-authenticators/push/challenge/sign?publicKey=$encodedKey"
+
+    return try {
+      val response = client.post(url) {
+        headers {
+          append(HttpHeaders.Authorization, basicAuth)
+        }
+      }
+
+      if (response.status == HttpStatusCode.OK) {
+        val data = response.body<AppChallengeSignResponse>()
+
+        AuthsignalResponse(data = data)
+      } else {
+        APIError.mapToErrorResponse(response)
+      }
+    } catch (e: Exception) {
+      APIError.handleNetworkException(e)
+    }
+  }
+
+  suspend fun getChallenge(publicKey: String, signature: String? = null): AuthsignalResponse<AppChallenge?> {
     val encodedKey = Encoder.toBase64String(publicKey.toByteArray())
     val url = "$baseURL/client/user-authenticators/push/challenge?publicKey=$encodedKey"
 
@@ -124,6 +147,10 @@ class PushAPI(tenantID: String, baseURL: String) : BaseAPI(tenantID, baseURL) {
       val response = client.get(url) {
         headers {
           append(HttpHeaders.Authorization, basicAuth)
+        }
+
+        if (signature != null) {
+          header("X-Authsignal-Signature", signature)
         }
       }
 
@@ -141,6 +168,8 @@ class PushAPI(tenantID: String, baseURL: String) : BaseAPI(tenantID, baseURL) {
           ipAddress = data.ipAddress,
           userAgent = data.userAgent,
           deviceId = data.deviceId,
+          custom = data.custom,
+          user = data.user,
         )
 
         return AuthsignalResponse(data = appChallenge)
