@@ -48,7 +48,7 @@ class AuthsignalPasskey(
     displayName: String? = null,
     preferImmediatelyAvailableCredentials: Boolean = true,
     ignorePasskeyAlreadyExistsError: Boolean = false,
-    syncCredentials: Boolean = true,
+    syncCredentials: Boolean = false,
   ): AuthsignalResponse<SignUpResponse> {
     val userToken = token ?: cache.token ?: return cache.handleTokenNotSetError()
 
@@ -130,7 +130,7 @@ class AuthsignalPasskey(
     action: String? = null,
     token: String? = null,
     preferImmediatelyAvailableCredentials: Boolean = true,
-    syncCredentials: Boolean = true,
+    syncCredentials: Boolean = false,
   ): AuthsignalResponse<SignInResponse> {
     val userToken = if (action == null) token ?: cache.token else null
 
