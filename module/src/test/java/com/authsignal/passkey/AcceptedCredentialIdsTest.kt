@@ -5,11 +5,6 @@ import com.authsignal.passkey.api.models.WebauthnCredential
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-/**
- * Unit tests for the credential-ID assembly that feeds the Credential Manager
- * Signal API (signalAllAcceptedCredentials). Mirrors the browser SDK's filtering
- * + de-dup logic.
- */
 class AcceptedCredentialIdsTest {
   private fun passkey(credentialId: String) = Authenticator(
     userAuthenticatorId = "ua_$credentialId",

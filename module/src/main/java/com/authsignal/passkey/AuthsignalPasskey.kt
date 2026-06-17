@@ -95,7 +95,7 @@ class AuthsignalPasskey(
     val authenticatorData = addAuthenticatorResponse.data
       ?: return AuthsignalResponse(
         error = addAuthenticatorResponse.error,
-        errorCode = registerResponse.errorCode
+        errorCode = addAuthenticatorResponse.errorCode
       )
 
     if (authenticatorData.isVerified) {
@@ -172,9 +172,6 @@ class AuthsignalPasskey(
     val verifyData = verifyResponse.data
 
     if (verifyData == null) {
-      // The credential is no longer known to the server (e.g. the passkey was
-      // deleted from the Authsignal portal). Signal this to the system so it can
-      // remove or hide the stale passkey.
       if (syncCredentials && verifyResponse.errorCode == SdkErrorCodes.UnknownCredential) {
         Log.i(TAG, "Passkey sync: signaling unknown credential to the system.")
 
@@ -213,7 +210,7 @@ class AuthsignalPasskey(
     val signInResponse = SignInResponse(
       isVerified = verifyData.isVerified,
       token = verifyData.accessToken,
-      userId = verifyData. userId,
+      userId = verifyData.userId,
       userAuthenticatorId = verifyData.userAuthenticatorId,
       username = verifyData.username,
       displayName = verifyData.userDisplayName,
@@ -313,11 +310,6 @@ class AuthsignalPasskey(
   }
 }
 
-/**
- * Builds the set of credential IDs to report to the system via the Signal API:
- * every passkey the server currently accepts, plus the credential just used
- * (in case the server list is briefly stale), de-duplicated.
- */
 internal fun buildAcceptedCredentialIds(
   authenticators: List<Authenticator>,
   currentCredentialId: String,

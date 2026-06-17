@@ -17,7 +17,6 @@ import org.json.JSONObject
 
 private const val TAG = "com.authsignal.passkey"
 
-// The Credential Manager Signal API requires Android 15 (API 35) or higher.
 private const val SIGNAL_API_MIN_SDK = 35
 
 private const val EXCLUDED_CREDENTIAL_ERROR_MESSAGE = "One of the excluded credentials exists on the local device"
@@ -135,14 +134,6 @@ class PasskeyManager(private val context: Context?) {
     }
   }
 
-  /**
-   * Reports the full set of credential IDs the server will accept for the user to
-   * the system credential manager. Credentials not present in the list may be
-   * removed or hidden by the credential provider.
-   *
-   * Fails silently — a missing or throttled Signal API must never break the auth
-   * flow, and the API is only available on Android 15 (API 35) or higher.
-   */
   suspend fun signalAllAcceptedCredentials(
     rpId: String,
     userId: String,
@@ -167,10 +158,6 @@ class PasskeyManager(private val context: Context?) {
     }
   }
 
-  /**
-   * Reports that a credential is no longer known to the server, so the system
-   * credential manager can remove or hide it. Fails silently.
-   */
   suspend fun signalUnknownCredential(rpId: String, credentialId: String) {
     if (credentialManager == null || Build.VERSION.SDK_INT < SIGNAL_API_MIN_SDK) {
       return
