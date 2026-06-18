@@ -2,6 +2,7 @@ package com.authsignal.passkey
 
 import android.app.Activity
 import android.os.Build
+import android.util.Log
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -11,11 +12,17 @@ import com.authsignal.TokenCache
 import com.authsignal.dataStore
 import com.authsignal.models.AuthsignalResponse
 import com.authsignal.passkey.api.*
+import com.authsignal.passkey.api.models.Authenticator
 import com.authsignal.passkey.models.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+
+private const val TAG = "com.authsignal.passkey"
 
 private val passkeyCredentialIdPreferencesKey = stringPreferencesKey("@as_passkey_credential_id")
 
@@ -41,6 +48,7 @@ class AuthsignalPasskey(
     displayName: String? = null,
     preferImmediatelyAvailableCredentials: Boolean = true,
     ignorePasskeyAlreadyExistsError: Boolean = false,
+    syncCredentials: Boolean = false,
   ): AuthsignalResponse<SignUpResponse> {
     val userToken = token ?: cache.token ?: return cache.handleTokenNotSetError()
 
@@ -87,7 +95,7 @@ class AuthsignalPasskey(
     val authenticatorData = addAuthenticatorResponse.data
       ?: return AuthsignalResponse(
         error = addAuthenticatorResponse.error,
-        errorCode = registerResponse.errorCode
+        errorCode = addAuthenticatorResponse.errorCode
       )
 
     if (authenticatorData.isVerified) {
@@ -98,8 +106,21 @@ class AuthsignalPasskey(
       token = authenticatorData.accessToken,
     )
 
-    authenticatorData.accessToken.let {
+    val accessToken = authenticatorData.accessToken
+
+    accessToken.let {
       cache.token = it
+    }
+
+    if (syncCredentials && authenticatorData.isVerified && accessToken != null) {
+      CoroutineScope(Dispatchers.IO).launch {
+        syncPasskeysWithCredentialManager(
+          rpId = options.rp.id,
+          userId = options.user.id,
+          credentialId = credential.rawId,
+          token = accessToken,
+        )
+      }
     }
 
     return AuthsignalResponse(data = signUpResponse)
@@ -108,7 +129,8 @@ class AuthsignalPasskey(
   suspend fun signIn(
     action: String? = null,
     token: String? = null,
-    preferImmediatelyAvailableCredentials: Boolean = true
+    preferImmediatelyAvailableCredentials: Boolean = true,
+    syncCredentials: Boolean = false,
   ): AuthsignalResponse<SignInResponse> {
     val userToken = if (action == null) token ?: cache.token else null
 
@@ -148,23 +170,47 @@ class AuthsignalPasskey(
     )
 
     val verifyData = verifyResponse.data
-      ?: return AuthsignalResponse(
+
+    if (verifyData == null) {
+      if (syncCredentials && verifyResponse.errorCode == SdkErrorCodes.UnknownCredential) {
+        Log.i(TAG, "Passkey sync: signaling unknown credential to the system.")
+
+        manager.signalUnknownCredential(optsData.options.rpId, credential.rawId)
+
+        removeStoredCredentialId(credential.rawId)
+      }
+
+      return AuthsignalResponse(
         error = verifyResponse.error,
         errorCode = verifyResponse.errorCode
       )
+    }
 
     if (verifyData.isVerified) {
       storeCredentialId(credential.rawId, verifyResponse.data.username)
     }
 
-    verifyData.accessToken.let {
+    val accessToken = verifyData.accessToken
+
+    accessToken.let {
       cache.token = it
+    }
+
+    if (syncCredentials && verifyData.isVerified && accessToken != null) {
+      CoroutineScope(Dispatchers.IO).launch {
+        syncPasskeysWithCredentialManager(
+          rpId = optsData.options.rpId,
+          userId = credential.response.userHandle,
+          credentialId = credential.rawId,
+          token = accessToken,
+        )
+      }
     }
 
     val signInResponse = SignInResponse(
       isVerified = verifyData.isVerified,
       token = verifyData.accessToken,
-      userId = verifyData. userId,
+      userId = verifyData.userId,
       userAuthenticatorId = verifyData.userAuthenticatorId,
       username = verifyData.username,
       displayName = verifyData.userDisplayName,
@@ -212,6 +258,23 @@ class AuthsignalPasskey(
     return AuthsignalResponse(data = hasPasskeyCredentialAvailable)
   }
 
+  private suspend fun syncPasskeysWithCredentialManager(
+    rpId: String,
+    userId: String,
+    credentialId: String,
+    token: String,
+  ) {
+    val authenticatorsResponse = api.getAuthenticators(token)
+
+    val authenticators = authenticatorsResponse.data ?: return
+
+    val credentialIds = buildAcceptedCredentialIds(authenticators, credentialId)
+
+    Log.i(TAG, "Passkey sync: reporting ${credentialIds.size} accepted credential(s) to the system.")
+
+    manager.signalAllAcceptedCredentials(rpId, userId, credentialIds)
+  }
+
   private suspend fun storeCredentialId(credentialId: String, username: String?) {
     dataStore?.edit { settings ->
       settings[passkeyCredentialIdPreferencesKey] = credentialId
@@ -233,4 +296,32 @@ class AuthsignalPasskey(
       stringPreferencesKey("${passkeyCredentialIdPreferencesKey.name}_${it}")
     } ?: passkeyCredentialIdPreferencesKey
   }
+
+  private suspend fun removeStoredCredentialId(credentialId: String) {
+    dataStore?.edit { settings ->
+      val matchingKeys = settings.asMap().entries
+        .filter { (key, value) ->
+          key.name.startsWith(passkeyCredentialIdPreferencesKey.name) && value == credentialId
+        }
+        .map { it.key }
+
+      matchingKeys.forEach { settings.remove(it) }
+    }
+  }
+}
+
+internal fun buildAcceptedCredentialIds(
+  authenticators: List<Authenticator>,
+  currentCredentialId: String,
+): List<String> {
+  val credentialIds = authenticators
+    .filter { it.verificationMethod == "PASSKEY" }
+    .mapNotNull { it.webauthnCredential?.credentialId }
+    .toMutableList()
+
+  if (!credentialIds.contains(currentCredentialId)) {
+    credentialIds.add(currentCredentialId)
+  }
+
+  return credentialIds
 }

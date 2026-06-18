@@ -12,8 +12,12 @@ import com.authsignal.models.AuthsignalResponse
 import com.authsignal.passkey.models.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.decodeFromString
+import org.json.JSONArray
+import org.json.JSONObject
 
 private const val TAG = "com.authsignal.passkey"
+
+private const val SIGNAL_API_MIN_SDK = 35
 
 private const val EXCLUDED_CREDENTIAL_ERROR_MESSAGE = "One of the excluded credentials exists on the local device"
 
@@ -127,6 +131,49 @@ class PasskeyManager(private val context: Context?) {
       Log.e(TAG, "getCredential failed: ${e.message}")
 
       AuthsignalResponse(error = "Unexpected exception: ${e.message}")
+    }
+  }
+
+  suspend fun signalAllAcceptedCredentials(
+    rpId: String,
+    userId: String,
+    credentialIds: List<String>
+  ) {
+    if (credentialManager == null || Build.VERSION.SDK_INT < SIGNAL_API_MIN_SDK) {
+      return
+    }
+
+    val requestJson = JSONObject().apply {
+      put("rpId", rpId)
+      put("userId", userId)
+      put("allAcceptedCredentialIds", JSONArray(credentialIds))
+    }.toString()
+
+    try {
+      credentialManager.signalCredentialState(
+        SignalAllAcceptedCredentialIdsRequest(requestJson = requestJson)
+      )
+    } catch (e: Exception) {
+      Log.e(TAG, "signalAllAcceptedCredentials failed: ${e.message}")
+    }
+  }
+
+  suspend fun signalUnknownCredential(rpId: String, credentialId: String) {
+    if (credentialManager == null || Build.VERSION.SDK_INT < SIGNAL_API_MIN_SDK) {
+      return
+    }
+
+    val requestJson = JSONObject().apply {
+      put("rpId", rpId)
+      put("credentialId", credentialId)
+    }.toString()
+
+    try {
+      credentialManager.signalCredentialState(
+        SignalUnknownCredentialRequest(requestJson = requestJson)
+      )
+    } catch (e: Exception) {
+      Log.e(TAG, "signalUnknownCredential failed: ${e.message}")
     }
   }
 }
