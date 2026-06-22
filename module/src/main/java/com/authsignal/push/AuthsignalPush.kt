@@ -33,6 +33,47 @@ class AuthsignalPush(
     return api.getCredential(publicKey)
   }
 
+  suspend fun updateCredential(
+    pushToken: String,
+    signer: Signature? = null
+  ): AuthsignalResponse<AppCredential> {
+    val publicKeyResponse = keyManager.getPublicKey()
+
+    val publicKey = publicKeyResponse.data
+      ?: return AuthsignalResponse(
+        error = publicKeyResponse.error,
+        errorCode = publicKeyResponse.errorCode
+      )
+
+    val nonceResponse = api.getSigningMessage(publicKey)
+
+    val challengeId = nonceResponse.data?.challengeId
+    val nonce = nonceResponse.data?.message
+
+    if (challengeId == null || nonce == null) {
+      return AuthsignalResponse(
+        error = nonceResponse.error,
+        errorCode = nonceResponse.errorCode
+      )
+    }
+
+    val signatureResponse = if (signer != null) {
+      Signer.finishSigning(nonce, signer)
+    } else {
+      val keyResponse = keyManager.getKey()
+
+      val key = keyResponse.data
+        ?: return AuthsignalResponse(error = keyResponse.error)
+
+      Signer.sign(nonce, key)
+    }
+
+    val signature = signatureResponse.data
+      ?: return AuthsignalResponse(error = signatureResponse.error)
+
+    return api.updateCredential(challengeId, publicKey, signature, pushToken)
+  }
+
   suspend fun addCredential(
     token: String? = null,
     deviceName: String? = null,
