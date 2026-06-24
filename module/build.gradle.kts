@@ -155,7 +155,7 @@ jreleaser {
 }
 
 dependencies {
-    implementation(platform("io.ktor:ktor-bom:2.2.4"))
+    implementation(platform("io.ktor:ktor-bom:3.2.4"))
     implementation("io.ktor:ktor-client-android")
     implementation("io.ktor:ktor-client-core")
     implementation("io.ktor:ktor-client-content-negotiation")
