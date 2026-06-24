@@ -45,27 +45,27 @@ class AuthsignalPush(
         errorCode = publicKeyResponse.errorCode
       )
 
-    val nonceResponse = api.getSigningMessage(publicKey)
+    val signingMessageResponse = api.getSigningMessage(publicKey)
 
-    val challengeId = nonceResponse.data?.challengeId
-    val nonce = nonceResponse.data?.message
+    val challengeId = signingMessageResponse.data?.challengeId
+    val messageToSign = signingMessageResponse.data?.message
 
-    if (challengeId == null || nonce == null) {
+    if (challengeId == null || messageToSign == null) {
       return AuthsignalResponse(
-        error = nonceResponse.error,
-        errorCode = nonceResponse.errorCode
+        error = signingMessageResponse.error,
+        errorCode = signingMessageResponse.errorCode
       )
     }
 
     val signatureResponse = if (signer != null) {
-      Signer.finishSigning(nonce, signer)
+      Signer.finishSigning(messageToSign, signer)
     } else {
       val keyResponse = keyManager.getKey()
 
       val key = keyResponse.data
         ?: return AuthsignalResponse(error = keyResponse.error)
 
-      Signer.sign(nonce, key)
+      Signer.sign(messageToSign, key)
     }
 
     val signature = signatureResponse.data
