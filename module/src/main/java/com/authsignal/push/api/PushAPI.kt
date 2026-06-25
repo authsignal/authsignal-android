@@ -183,7 +183,7 @@ class PushAPI(tenantID: String, baseURL: String) : BaseAPI(tenantID, baseURL) {
 
   suspend fun getSigningMessage(publicKey: String): AuthsignalResponse<AppUpdateSignResponse> {
     val encodedKey = Encoder.toBase64String(publicKey.toByteArray())
-    val url = "$baseURL/client/user-authenticators/push/update/sign?publicKey=$encodedKey"
+    val url = "$baseURL/client/user-authenticators/push/sign?publicKey=$encodedKey"
 
     return try {
       val response = client.post(url) {
