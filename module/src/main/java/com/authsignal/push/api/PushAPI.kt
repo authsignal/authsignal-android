@@ -210,11 +210,11 @@ class PushAPI(tenantID: String, baseURL: String) : BaseAPI(tenantID, baseURL) {
     signature: String,
     pushToken: String,
   ): AuthsignalResponse<UpdateAppCredentialResponse> {
-    val url = "$baseURL/client/user-authenticators/push/update"
+    val url = "$baseURL/client/user-authenticators/push"
     val body = UpdateAppCredentialRequest(challengeId, publicKey, signature, pushToken)
 
     return try {
-      val response = client.post(url) {
+      val response = client.patch(url) {
         contentType(ContentType.Application.Json)
         setBody(body)
 
