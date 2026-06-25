@@ -209,7 +209,7 @@ class PushAPI(tenantID: String, baseURL: String) : BaseAPI(tenantID, baseURL) {
     publicKey: String,
     signature: String,
     pushToken: String,
-  ): AuthsignalResponse<AppCredential> {
+  ): AuthsignalResponse<UpdateAppCredentialResponse> {
     val url = "$baseURL/client/user-authenticators/push/update"
     val body = UpdateAppCredentialRequest(challengeId, publicKey, signature, pushToken)
 
@@ -224,16 +224,7 @@ class PushAPI(tenantID: String, baseURL: String) : BaseAPI(tenantID, baseURL) {
       }
 
       if (response.status == HttpStatusCode.OK) {
-        val data = response.body<UpdateAppCredentialResponse>()
-
-        val credential = AppCredential(
-          userId = data.userId,
-          credentialId = data.userAuthenticatorId,
-          createdAt = data.lastVerifiedAt,
-          lastAuthenticatedAt = data.lastVerifiedAt,
-        )
-
-        AuthsignalResponse(data = credential)
+        AuthsignalResponse(data = response.body<UpdateAppCredentialResponse>())
       } else {
         APIError.mapToErrorResponse(response)
       }
