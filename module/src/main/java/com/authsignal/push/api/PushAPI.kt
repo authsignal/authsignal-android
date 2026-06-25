@@ -181,6 +181,58 @@ class PushAPI(tenantID: String, baseURL: String) : BaseAPI(tenantID, baseURL) {
     }
   }
 
+  suspend fun getSigningMessage(publicKey: String): AuthsignalResponse<AppUpdateSignResponse> {
+    val encodedKey = Encoder.toBase64String(publicKey.toByteArray())
+    val url = "$baseURL/client/user-authenticators/push/sign?publicKey=$encodedKey"
+
+    return try {
+      val response = client.post(url) {
+        headers {
+          append(HttpHeaders.Authorization, basicAuth)
+        }
+      }
+
+      if (response.status == HttpStatusCode.OK) {
+        val data = response.body<AppUpdateSignResponse>()
+
+        AuthsignalResponse(data = data)
+      } else {
+        APIError.mapToErrorResponse(response)
+      }
+    } catch (e: Exception) {
+      APIError.handleNetworkException(e)
+    }
+  }
+
+  suspend fun updateCredential(
+    challengeId: String,
+    publicKey: String,
+    signature: String,
+    pushToken: String,
+  ): AuthsignalResponse<UpdateAppCredentialResponse> {
+    val url = "$baseURL/client/user-authenticators/push"
+    val body = UpdateAppCredentialRequest(challengeId, publicKey, signature, pushToken)
+
+    return try {
+      val response = client.patch(url) {
+        contentType(ContentType.Application.Json)
+        setBody(body)
+
+        headers {
+          append(HttpHeaders.Authorization, basicAuth)
+        }
+      }
+
+      if (response.status == HttpStatusCode.OK) {
+        AuthsignalResponse(data = response.body<UpdateAppCredentialResponse>())
+      } else {
+        APIError.mapToErrorResponse(response)
+      }
+    } catch (e: Exception) {
+      APIError.handleNetworkException(e)
+    }
+  }
+
   suspend fun updateChallenge(
     challengeId: String,
     publicKey: String,

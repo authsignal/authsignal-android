@@ -11,6 +11,7 @@ import com.authsignal.models.AuthsignalResponse
 import com.authsignal.push.api.PushAPI
 import com.authsignal.models.AppChallenge
 import com.authsignal.models.AppCredential
+import com.authsignal.models.api.UpdateAppCredentialResponse
 import java.security.Signature
 
 class AuthsignalPush(
@@ -31,6 +32,52 @@ class AuthsignalPush(
       )
 
     return api.getCredential(publicKey)
+  }
+
+  suspend fun updateCredential(
+    pushToken: String,
+    signer: Signature? = null
+  ): AuthsignalResponse<UpdateAppCredentialResponse> {
+    val publicKeyResponse = keyManager.getPublicKey()
+
+    val publicKey = publicKeyResponse.data
+      ?: return AuthsignalResponse(
+        error = publicKeyResponse.error,
+        errorCode = publicKeyResponse.errorCode
+      )
+
+    val signingMessageResponse = api.getSigningMessage(publicKey)
+
+    if (signingMessageResponse.error != null) {
+      return AuthsignalResponse(
+        error = signingMessageResponse.error,
+        errorCode = signingMessageResponse.errorCode
+      )
+    }
+
+    // A 200 with missing fields is a protocol error, not a silent no-op.
+    val challengeId = signingMessageResponse.data?.challengeId
+    val messageToSign = signingMessageResponse.data?.message
+
+    if (challengeId == null || messageToSign == null) {
+      return AuthsignalResponse(error = "Invalid signing message response.")
+    }
+
+    val signatureResponse = if (signer != null) {
+      Signer.finishSigning(messageToSign, signer)
+    } else {
+      val keyResponse = keyManager.getKey()
+
+      val key = keyResponse.data
+        ?: return AuthsignalResponse(error = keyResponse.error)
+
+      Signer.sign(messageToSign, key)
+    }
+
+    val signature = signatureResponse.data
+      ?: return AuthsignalResponse(error = signatureResponse.error)
+
+    return api.updateCredential(challengeId, publicKey, signature, pushToken)
   }
 
   suspend fun addCredential(
