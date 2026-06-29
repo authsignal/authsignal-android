@@ -28,8 +28,13 @@ data class AppCredential(
     }
 
   private fun parseIso8601(value: String): Date? {
-    // Normalise to a form SimpleDateFormat can parse on API 23 (no java.time):
-    // "...Z" and "...+00:00" -> "...+0000".
+    // The server emits `expiresAt` via Luxon `DateTime.toISO()`, which yields
+    // fractional seconds plus a numeric timezone offset that includes a colon,
+    // e.g. "2026-06-30T12:42:38.416+12:00". minSdk is 23 with no core-library
+    // desugaring, so `java.time` is unavailable; `SimpleDateFormat`'s `Z` token
+    // does not accept a colon in the offset, so normalise before parsing:
+    //   - "...Z"      -> "...+0000"
+    //   - "...+12:00" -> "...+1200"
     val normalised = value
       .replace("Z", "+0000")
       .replace(Regex("([+-]\\d{2}):(\\d{2})$"), "$1$2")
@@ -41,7 +46,13 @@ data class AppCredential(
 
     for (pattern in patterns) {
       try {
-        return SimpleDateFormat(pattern, Locale.US).parse(normalised)
+        val formatter = SimpleDateFormat(pattern, Locale.US).apply {
+          // Reject malformed input rather than coercing it, so an unparseable
+          // value falls through to `null` (fail-open => not expired).
+          isLenient = false
+        }
+
+        return formatter.parse(normalised)
       } catch (_: Exception) {
         // Try the next pattern.
       }
