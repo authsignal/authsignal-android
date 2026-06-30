@@ -8,5 +8,5 @@ data class UpdateAppCredentialRequest(
   val publicKey: String,
   val signature: String,
   val pushToken: String? = null,
-  val extend: Boolean = false,
+  val resetExpiry: Boolean = false,
 )

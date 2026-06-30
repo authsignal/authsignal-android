@@ -36,7 +36,7 @@ class AuthsignalPush(
 
   suspend fun updateCredential(
     pushToken: String? = null,
-    extend: Boolean = false,
+    resetExpiry: Boolean = false,
     signer: Signature? = null
   ): AuthsignalResponse<UpdateAppCredentialResponse> {
     val publicKeyResponse = keyManager.getPublicKey()
@@ -78,7 +78,7 @@ class AuthsignalPush(
     val signature = signatureResponse.data
       ?: return AuthsignalResponse(error = signatureResponse.error)
 
-    return api.updateCredential(challengeId, publicKey, signature, pushToken, extend)
+    return api.updateCredential(challengeId, publicKey, signature, pushToken, resetExpiry)
   }
 
   suspend fun addCredential(
