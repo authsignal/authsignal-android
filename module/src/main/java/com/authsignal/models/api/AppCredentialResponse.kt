@@ -8,5 +8,5 @@ data class AppCredentialResponse(
   val userId: String,
   val verifiedAt: String,
   val lastVerifiedAt: String? = null,
-  val expiresAt: String? = null,
+  val expiresAt: Long? = null,
 )
