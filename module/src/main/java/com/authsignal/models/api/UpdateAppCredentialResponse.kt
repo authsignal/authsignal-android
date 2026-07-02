@@ -7,5 +7,7 @@ data class UpdateAppCredentialResponse(
   val userAuthenticatorId: String,
   val userId: String,
   val lastVerifiedAt: String,
-  val pushToken: String,
+  // Echoes the request's pushToken; absent for keep-alive calls that omit the token.
+  val pushToken: String? = null,
+  val expiresAt: String? = null,
 )
