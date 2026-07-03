@@ -8,5 +8,5 @@ data class UpdateAppCredentialResponse(
   val userId: String,
   val lastVerifiedAt: String,
   val pushToken: String? = null,
-  val expiresAt: Long? = null,
+  val expiresAt: String? = null,
 )
