@@ -8,4 +8,5 @@ data class AppCredential(
   val createdAt: String,
   val userId: String,
   val lastAuthenticatedAt: String? = null,
+  val expiresAt: String? = null,
 )

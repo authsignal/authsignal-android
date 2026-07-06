@@ -30,6 +30,7 @@ class PushAPI(tenantID: String, baseURL: String) : BaseAPI(tenantID, baseURL) {
           credentialId = data.userAuthenticatorId,
           createdAt = data.verifiedAt,
           lastAuthenticatedAt = data.lastVerifiedAt,
+          expiresAt = data.expiresAt,
         )
 
         AuthsignalResponse(data = credential)
@@ -76,6 +77,7 @@ class PushAPI(tenantID: String, baseURL: String) : BaseAPI(tenantID, baseURL) {
           credentialId = data.userAuthenticatorId,
           createdAt = data.verifiedAt,
           lastAuthenticatedAt = data.lastVerifiedAt,
+          expiresAt = data.expiresAt,
         )
 
         AuthsignalResponse(data = credential)
@@ -208,10 +210,11 @@ class PushAPI(tenantID: String, baseURL: String) : BaseAPI(tenantID, baseURL) {
     challengeId: String,
     publicKey: String,
     signature: String,
-    pushToken: String,
+    pushToken: String? = null,
+    resetExpiry: Boolean = false,
   ): AuthsignalResponse<UpdateAppCredentialResponse> {
     val url = "$baseURL/client/user-authenticators/push"
-    val body = UpdateAppCredentialRequest(challengeId, publicKey, signature, pushToken)
+    val body = UpdateAppCredentialRequest(challengeId, publicKey, signature, pushToken, resetExpiry)
 
     return try {
       val response = client.patch(url) {
