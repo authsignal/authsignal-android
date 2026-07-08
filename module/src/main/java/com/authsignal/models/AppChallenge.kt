@@ -14,4 +14,5 @@ data class AppChallenge(
   val ipAddress: String?,
   val custom: JsonObject? = null,
   val user: ChallengeUser? = null,
+  val expiresAt: Long? = null,
 )
