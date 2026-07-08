@@ -170,6 +170,7 @@ class PushAPI(tenantID: String, baseURL: String) : BaseAPI(tenantID, baseURL) {
           ipAddress = data.ipAddress,
           userAgent = data.userAgent,
           deviceId = data.deviceId,
+          expiresAt = data.expiresAt,
           custom = data.custom,
           user = data.user,
         )

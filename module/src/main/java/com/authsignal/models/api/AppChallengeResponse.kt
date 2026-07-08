@@ -16,4 +16,5 @@ data class AppChallengeResponse(
   val ipAddress: String? = null,
   val custom: JsonObject? = null,
   val user: ChallengeUser? = null,
+  val expiresAt: Long? = null,
 )
