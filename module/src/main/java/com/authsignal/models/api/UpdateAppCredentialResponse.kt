@@ -9,4 +9,6 @@ data class UpdateAppCredentialResponse(
   val lastVerifiedAt: String,
   val pushToken: String? = null,
   val expiresAt: String? = null,
+  val erroredAt: String? = null,
+  val errorCode: String? = null,
 )

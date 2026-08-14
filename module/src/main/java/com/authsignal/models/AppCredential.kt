@@ -9,4 +9,6 @@ data class AppCredential(
   val userId: String,
   val lastAuthenticatedAt: String? = null,
   val expiresAt: String? = null,
+  val erroredAt: String? = null,
+  val errorCode: String? = null,
 )

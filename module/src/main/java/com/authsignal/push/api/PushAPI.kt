@@ -31,6 +31,8 @@ class PushAPI(tenantID: String, baseURL: String) : BaseAPI(tenantID, baseURL) {
           createdAt = data.verifiedAt,
           lastAuthenticatedAt = data.lastVerifiedAt,
           expiresAt = data.expiresAt,
+          erroredAt = data.erroredAt,
+          errorCode = data.errorCode,
         )
 
         AuthsignalResponse(data = credential)

@@ -9,4 +9,6 @@ data class AppCredentialResponse(
   val verifiedAt: String,
   val lastVerifiedAt: String? = null,
   val expiresAt: String? = null,
+  val erroredAt: String? = null,
+  val errorCode: String? = null,
 )
