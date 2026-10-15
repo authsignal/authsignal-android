@@ -31,7 +31,7 @@ class AuthsignalSMS(
 
     val verifyResponse = api.verify(token, code)
 
-    verifyResponse.data?.token.let {
+    verifyResponse.data?.token?.let {
       cache.token = it
     }
 
