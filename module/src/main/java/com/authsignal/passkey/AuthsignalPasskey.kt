@@ -108,7 +108,7 @@ class AuthsignalPasskey(
 
     val accessToken = authenticatorData.accessToken
 
-    accessToken.let {
+    accessToken?.let {
       cache.token = it
     }
 
@@ -192,7 +192,7 @@ class AuthsignalPasskey(
 
     val accessToken = verifyData.accessToken
 
-    accessToken.let {
+    accessToken?.let {
       cache.token = it
     }
 
