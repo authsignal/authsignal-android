@@ -22,8 +22,6 @@ class KeyManager(keySuffix: String) {
     authorizationType: Int,
     username: String? = null
   ): AuthsignalResponse<String> {
-    // When a username is provided, only reuse a key scoped to that user
-    // Falling back to a shared key would bind the same credential to multiple users
     val publicKeyResponse = getPublicKey(username = username, includeFallbacks = username == null)
 
     if (publicKeyResponse.data != null) {
@@ -94,7 +92,6 @@ class KeyManager(keySuffix: String) {
         keyStore.deleteEntry(userKeyTag)
       }
 
-      // Shared keys may be in use by other users so only delete them when no username is provided
       if (username == null) {
         val legacyKeyTag = getLegacyKeyTag()
 

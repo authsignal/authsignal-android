@@ -205,8 +205,6 @@ class AuthsignalInApp(
   suspend fun deletePin(username: String): AuthsignalResponse<Boolean> {
     val removeCredentialResponse = removeCredential(username = username)
 
-    // If the credential no longer exists on the server or device then the PIN can't be used
-    // so we can still safely clean up the local PIN and key
     val credentialAlreadyRemoved = removeCredentialResponse.errorCode == SdkErrorCodes.InvalidCredential ||
       removeCredentialResponse.errorCode == SdkErrorCodes.NoCredential
 
