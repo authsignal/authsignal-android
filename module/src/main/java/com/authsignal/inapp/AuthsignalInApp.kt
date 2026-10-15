@@ -86,8 +86,10 @@ class AuthsignalInApp(
   ): AuthsignalResponse<Boolean> {
     val keyResponse = keyManager.getKey(username)
 
-    val key = keyResponse.data
-      ?: return AuthsignalResponse(error = keyResponse.error)
+    val key = keyResponse.data ?: return AuthsignalResponse(
+      error = keyResponse.error ?: "No credential found on this device.",
+      errorCode = keyResponse.errorCode ?: SdkErrorCodes.NoCredential,
+    )
 
     val publicKey = keyManager.derivePublicKey(key)
 
@@ -104,11 +106,14 @@ class AuthsignalInApp(
 
     val removeCredentialResponse = api.removeCredential(publicKey, signature)
 
-    return AuthsignalResponse(
-      data = keyManager.deleteKey(username),
-      error = removeCredentialResponse.error,
-      errorCode = removeCredentialResponse.errorCode,
-    )
+    if (removeCredentialResponse.data != true) {
+      return AuthsignalResponse(
+        error = removeCredentialResponse.error,
+        errorCode = removeCredentialResponse.errorCode,
+      )
+    }
+
+    return AuthsignalResponse(data = keyManager.deleteKey(username))
   }
 
   suspend fun verify(
@@ -122,8 +127,10 @@ class AuthsignalInApp(
 
     val keyResponse = keyManager.getKey(username)
 
-    val key = keyResponse.data
-      ?: return AuthsignalResponse(error = keyResponse.error)
+    val key = keyResponse.data ?: return AuthsignalResponse(
+      error = keyResponse.error ?: "No credential found on this device.",
+      errorCode = keyResponse.errorCode ?: SdkErrorCodes.NoCredential,
+    )
 
     val signatureResponse = Signer.sign(challengeId, key)
 
@@ -198,16 +205,25 @@ class AuthsignalInApp(
   suspend fun deletePin(username: String): AuthsignalResponse<Boolean> {
     val removeCredentialResponse = removeCredential(username = username)
 
-    if (removeCredentialResponse.data != true) {
+    // If the credential no longer exists on the server or device then the PIN can't be used
+    // so we can still safely clean up the local PIN and key
+    val credentialAlreadyRemoved = removeCredentialResponse.errorCode == SdkErrorCodes.InvalidCredential ||
+      removeCredentialResponse.errorCode == SdkErrorCodes.NoCredential
+
+    if (removeCredentialResponse.data != true && !credentialAlreadyRemoved) {
       return AuthsignalResponse(
         error = removeCredentialResponse.error,
         errorCode = removeCredentialResponse.errorCode,
       )
     }
-    
+
+    if (credentialAlreadyRemoved) {
+      keyManager.deleteKey(username)
+    }
+
     pinManager.deletePin(username)
 
-    return removeCredentialResponse
+    return AuthsignalResponse(data = true)
   }
 
   fun getAllPinUsernames(): AuthsignalResponse<List<String>> {

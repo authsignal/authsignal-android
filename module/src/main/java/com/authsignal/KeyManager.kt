@@ -22,7 +22,9 @@ class KeyManager(keySuffix: String) {
     authorizationType: Int,
     username: String? = null
   ): AuthsignalResponse<String> {
-    val publicKeyResponse = getPublicKey()
+    // When a username is provided, only reuse a key scoped to that user
+    // Falling back to a shared key would bind the same credential to multiple users
+    val publicKeyResponse = getPublicKey(username = username, includeFallbacks = username == null)
 
     if (publicKeyResponse.data != null) {
       return AuthsignalResponse(data = publicKeyResponse.data)
@@ -36,17 +38,22 @@ class KeyManager(keySuffix: String) {
     )
   }
 
-  fun getKey(username: String? = null): AuthsignalResponse<KeyStore.PrivateKeyEntry> {
+  fun getKey(
+    username: String? = null,
+    includeFallbacks: Boolean = true,
+  ): AuthsignalResponse<KeyStore.PrivateKeyEntry> {
     return try {
       val keyStore = KeyStore.getInstance("AndroidKeyStore")
 
       keyStore.load(null)
 
-      val userKeyTag = getUserKeyTag(username = username)
-      val legacyKeyTag = getLegacyKeyTag()
+      val keyTags = if (includeFallbacks) {
+        listOf(getUserKeyTag(username = username), keyTag, getLegacyKeyTag()).distinct()
+      } else {
+        listOf(getUserKeyTag(username = username))
+      }
 
-      val entry = keyStore.getEntry(userKeyTag, null)
-        ?: keyStore.getEntry(legacyKeyTag, null)
+      val entry = keyTags.firstNotNullOfOrNull { keyStore.getEntry(it, null) }
 
       AuthsignalResponse(data = entry as KeyStore.PrivateKeyEntry)
     } catch (e: Exception) {
@@ -54,8 +61,11 @@ class KeyManager(keySuffix: String) {
     }
   }
 
-  fun getPublicKey(username: String? = null): AuthsignalResponse<String> {
-    val keyResponse = getKey(username = username)
+  fun getPublicKey(
+    username: String? = null,
+    includeFallbacks: Boolean = true,
+  ): AuthsignalResponse<String> {
+    val keyResponse = getKey(username = username, includeFallbacks = includeFallbacks)
 
     val key = keyResponse.data ?: return AuthsignalResponse(data = null)
 
@@ -76,20 +86,23 @@ class KeyManager(keySuffix: String) {
 
       keyStore.load(null)
 
-      val keyTag = getUserKeyTag(username = username)
+      val userKeyTag = getUserKeyTag(username = username)
 
-      val keyEntry = keyStore.getEntry(keyTag, null)
+      val keyEntry = keyStore.getEntry(userKeyTag, null)
 
       if (keyEntry != null) {
-        keyStore.deleteEntry(keyTag)
+        keyStore.deleteEntry(userKeyTag)
       }
 
-      val legacyKeyTag = getLegacyKeyTag()
+      // Shared keys may be in use by other users so only delete them when no username is provided
+      if (username == null) {
+        val legacyKeyTag = getLegacyKeyTag()
 
-      val legacyKeyEntry = keyStore.getEntry(legacyKeyTag, null)
+        val legacyKeyEntry = keyStore.getEntry(legacyKeyTag, null)
 
-      if (legacyKeyEntry != null) {
-        keyStore.deleteEntry(keyTag)
+        if (legacyKeyEntry != null) {
+          keyStore.deleteEntry(legacyKeyTag)
+        }
       }
 
       true
