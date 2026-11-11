@@ -15,8 +15,9 @@ import java.security.Signature
 class AuthsignalInApp(
   tenantID: String,
   baseURL: String,
-  context: Context? = null) {
-  private val api = InAppAPI(tenantID, baseURL)
+  context: Context? = null,
+  retries: Int = 2) {
+  private val api = InAppAPI(tenantID, baseURL, retries)
   private val keyManager = KeyManager("in_app")
   private val pinManager = PinManager(context = context)
   private val playIntegrityManager = PlayIntegrityManager(context)

@@ -17,8 +17,9 @@ import java.security.Signature
 class AuthsignalPush(
   tenantID: String,
   baseURL: String,
-  context: Context? = null) {
-  private val api = PushAPI(tenantID, baseURL)
+  context: Context? = null,
+  retries: Int = 2) {
+  private val api = PushAPI(tenantID, baseURL, retries)
   private val keyManager = KeyManager("push")
   private val playIntegrityManager = PlayIntegrityManager(context)
 

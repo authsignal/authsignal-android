@@ -15,8 +15,9 @@ import java.security.Signature
 class AuthsignalQRCode(
   tenantID: String,
   baseURL: String,
-  context: Context? = null) {
-  private val api = QRCodeAPI(tenantID, baseURL)
+  context: Context? = null,
+  retries: Int = 2) {
+  private val api = QRCodeAPI(tenantID, baseURL, retries)
   private val keyManager = KeyManager("qr_code")
   private val playIntegrityManager = PlayIntegrityManager(context)
 

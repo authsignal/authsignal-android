@@ -9,9 +9,10 @@ import com.authsignal.models.VerifyResponse
 
 class AuthsignalSMS(
   tenantID: String,
-  baseURL: String
+  baseURL: String,
+  retries: Int = 2,
 ) {
-  private val api = SMSAPI(tenantID, baseURL)
+  private val api = SMSAPI(tenantID, baseURL, retries)
   private val cache = TokenCache.shared
 
   suspend fun enroll(phoneNumber: String): AuthsignalResponse<EnrollResponse> {

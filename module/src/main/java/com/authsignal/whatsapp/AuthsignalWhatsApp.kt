@@ -8,9 +8,10 @@ import com.authsignal.models.VerifyResponse
 
 class AuthsignalWhatsApp(
   tenantID: String,
-  baseURL: String
+  baseURL: String,
+  retries: Int = 2,
 ) {
-  private val api = WhatsAppAPI(tenantID, baseURL)
+  private val api = WhatsAppAPI(tenantID, baseURL, retries)
   private val cache = TokenCache.shared
 
   suspend fun challenge(): AuthsignalResponse<ChallengeResponse> {

@@ -17,15 +17,16 @@ class Authsignal(
   activity: Activity? = null,
   context: Context? = null,
   deviceId: String? = null,
+  retries: Int = 2,
 ) {
-  val passkey = AuthsignalPasskey(tenantID = tenantID, baseURL = baseURL, activity = activity, deviceId = deviceId)
-  val push = AuthsignalPush(tenantID = tenantID, baseURL = baseURL, context = context)
-  val qr = AuthsignalQRCode(tenantID = tenantID, baseURL = baseURL, context = context)
-  val inapp = AuthsignalInApp(tenantID = tenantID, baseURL = baseURL, context = context)
-  val email = AuthsignalEmail(tenantID = tenantID, baseURL = baseURL)
-  val sms = AuthsignalSMS(tenantID = tenantID, baseURL = baseURL)
-  val whatsapp = AuthsignalWhatsApp(tenantID = tenantID, baseURL = baseURL)
-  val totp = AuthsignalTOTP(tenantID = tenantID, baseURL = baseURL)
+  val passkey = AuthsignalPasskey(tenantID = tenantID, baseURL = baseURL, activity = activity, deviceId = deviceId, retries = retries)
+  val push = AuthsignalPush(tenantID = tenantID, baseURL = baseURL, context = context, retries = retries)
+  val qr = AuthsignalQRCode(tenantID = tenantID, baseURL = baseURL, context = context, retries = retries)
+  val inapp = AuthsignalInApp(tenantID = tenantID, baseURL = baseURL, context = context, retries = retries)
+  val email = AuthsignalEmail(tenantID = tenantID, baseURL = baseURL, retries = retries)
+  val sms = AuthsignalSMS(tenantID = tenantID, baseURL = baseURL, retries = retries)
+  val whatsapp = AuthsignalWhatsApp(tenantID = tenantID, baseURL = baseURL, retries = retries)
+  val totp = AuthsignalTOTP(tenantID = tenantID, baseURL = baseURL, retries = retries)
 
   init {
     val ctx = context ?: activity?.applicationContext

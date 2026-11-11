@@ -30,8 +30,9 @@ class AuthsignalPasskey(
   tenantID: String,
   baseURL: String,
   private val activity: Activity? = null,
-  private val deviceId: String? = null) {
-  private val api = PasskeyAPI(tenantID, baseURL)
+  private val deviceId: String? = null,
+  retries: Int = 2) {
+  private val api = PasskeyAPI(tenantID, baseURL, retries)
   private val manager = PasskeyManager(activity)
   private val cache = TokenCache.shared
   private val dataStore = activity?.applicationContext?.dataStore

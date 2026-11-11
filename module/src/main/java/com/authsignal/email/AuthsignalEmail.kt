@@ -9,9 +9,10 @@ import com.authsignal.models.VerifyResponse
 
 class AuthsignalEmail(
   tenantID: String,
-  baseURL: String
+  baseURL: String,
+  retries: Int = 2,
 ) {
-  private val api = EmailAPI(tenantID, baseURL)
+  private val api = EmailAPI(tenantID, baseURL, retries)
   private val cache = TokenCache.shared
 
   suspend fun enroll(email: String): AuthsignalResponse<EnrollResponse> {

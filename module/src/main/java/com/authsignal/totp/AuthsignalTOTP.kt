@@ -8,9 +8,10 @@ import com.authsignal.models.VerifyResponse
 
 class AuthsignalTOTP(
   tenantID: String,
-  baseURL: String
+  baseURL: String,
+  retries: Int = 2,
 ) {
-  private val api = TOTPAPI(tenantID, baseURL)
+  private val api = TOTPAPI(tenantID, baseURL, retries)
   private val cache = TokenCache.shared
 
   suspend fun enroll(): AuthsignalResponse<EnrollTOTPResponse> {

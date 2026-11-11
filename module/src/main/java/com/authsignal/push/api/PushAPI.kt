@@ -9,7 +9,7 @@ import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 
-class PushAPI(tenantID: String, baseURL: String) : BaseAPI(tenantID, baseURL) {
+class PushAPI(tenantID: String, baseURL: String, retries: Int) : BaseAPI(tenantID, baseURL, retries) {
 
   suspend fun getCredential(publicKey: String): AuthsignalResponse<AppCredential> {
     val encodedKey = Encoder.toBase64String(publicKey.toByteArray())
