@@ -21,24 +21,6 @@ private const val SIGNAL_API_MIN_SDK = 35
 
 private const val EXCLUDED_CREDENTIAL_ERROR_MESSAGE = "An existing credential is already available for this device."
 
-internal fun registrationDomErrorResponse(
-  e: CreatePublicKeyCredentialDomException
-): AuthsignalResponse<PasskeyRegistrationCredential> {
-  return if (e.domError is InvalidStateError) {
-    // Per WebAuthn, InvalidStateError from create means an excluded credential matched.
-    // Providers localise the message, so pass it through rather than matching on it.
-    AuthsignalResponse(
-      error = e.errorMessage?.toString() ?: EXCLUDED_CREDENTIAL_ERROR_MESSAGE,
-      errorCode = SdkErrorCodes.MatchedExcludedCredential
-    )
-  } else {
-    AuthsignalResponse(
-      error = e.message,
-      errorCode = SdkErrorCodes.DomError
-    )
-  }
-}
-
 class PasskeyManager(private val context: Context?) {
   private val credentialManager: CredentialManager? =
     if (context != null)
@@ -85,7 +67,17 @@ class PasskeyManager(private val context: Context?) {
         errorCode = SdkErrorCodes.UserCanceled
       )
     } catch (e: CreatePublicKeyCredentialDomException) {
-      registrationDomErrorResponse(e)
+      if (e.domError is InvalidStateError) {
+        AuthsignalResponse(
+          error = e.errorMessage?.toString() ?: EXCLUDED_CREDENTIAL_ERROR_MESSAGE,
+          errorCode = SdkErrorCodes.MatchedExcludedCredential
+        )
+      } else {
+        AuthsignalResponse(
+          error = e.message,
+          errorCode = SdkErrorCodes.DomError
+        )
+      }
     } catch (e: CreateCredentialException) {
       Log.e(TAG, "createCredential failed: ${e.message}")
 
