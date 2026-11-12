@@ -4,6 +4,7 @@ import android.content.Context
 import com.authsignal.DeviceUtils
 import com.authsignal.KeyManager
 import com.authsignal.PinManager
+import com.authsignal.RetryPolicy
 import com.authsignal.SdkErrorCodes
 import com.authsignal.Signer
 import com.authsignal.TokenCache
@@ -16,7 +17,7 @@ class AuthsignalInApp(
   tenantID: String,
   baseURL: String,
   context: Context? = null,
-  retries: Int = 2) {
+  retries: Int = RetryPolicy.DEFAULT_RETRIES) {
   private val api = InAppAPI(tenantID, baseURL, retries)
   private val keyManager = KeyManager("in_app")
   private val pinManager = PinManager(context = context)

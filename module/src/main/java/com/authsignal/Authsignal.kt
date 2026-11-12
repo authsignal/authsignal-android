@@ -17,7 +17,7 @@ class Authsignal(
   activity: Activity? = null,
   context: Context? = null,
   deviceId: String? = null,
-  retries: Int = 2,
+  retries: Int = RetryPolicy.DEFAULT_RETRIES,
 ) {
   val passkey = AuthsignalPasskey(tenantID = tenantID, baseURL = baseURL, activity = activity, deviceId = deviceId, retries = retries)
   val push = AuthsignalPush(tenantID = tenantID, baseURL = baseURL, context = context, retries = retries)

@@ -1,5 +1,6 @@
 package com.authsignal.email
 
+import com.authsignal.RetryPolicy
 import com.authsignal.TokenCache
 import com.authsignal.email.api.EmailAPI
 import com.authsignal.models.AuthsignalResponse
@@ -10,7 +11,7 @@ import com.authsignal.models.VerifyResponse
 class AuthsignalEmail(
   tenantID: String,
   baseURL: String,
-  retries: Int = 2,
+  retries: Int = RetryPolicy.DEFAULT_RETRIES,
 ) {
   private val api = EmailAPI(tenantID, baseURL, retries)
   private val cache = TokenCache.shared

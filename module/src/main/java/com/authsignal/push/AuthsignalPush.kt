@@ -3,6 +3,7 @@ package com.authsignal.push
 import android.content.Context
 import com.authsignal.DeviceUtils
 import com.authsignal.KeyManager
+import com.authsignal.RetryPolicy
 import com.authsignal.SdkErrorCodes
 import com.authsignal.Signer
 import com.authsignal.TokenCache
@@ -18,7 +19,7 @@ class AuthsignalPush(
   tenantID: String,
   baseURL: String,
   context: Context? = null,
-  retries: Int = 2) {
+  retries: Int = RetryPolicy.DEFAULT_RETRIES) {
   private val api = PushAPI(tenantID, baseURL, retries)
   private val keyManager = KeyManager("push")
   private val playIntegrityManager = PlayIntegrityManager(context)
