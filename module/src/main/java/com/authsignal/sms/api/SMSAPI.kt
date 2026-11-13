@@ -13,8 +13,8 @@ import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 
-class SMSAPI(tenantID: String, private val baseURL: String) {
-  private val client = HttpClientFactory.create(tenantID)
+class SMSAPI(tenantID: String, private val baseURL: String, retries: Int) {
+  private val client = HttpClientFactory.create(tenantID, retries)
 
   private val basicAuth = "Basic ${Encoder.toBase64String("$tenantID:".toByteArray())}"
 
