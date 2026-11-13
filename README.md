@@ -20,7 +20,7 @@ buildscript {
 Add the following to your app's build.gradle file:
 
 ```
-implementation 'com.authsignal:authsignal-android:4.3.3'
+implementation 'com.authsignal:authsignal-android:4.4.1'
 ```
 
 ## Initialization

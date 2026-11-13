@@ -1,5 +1,6 @@
 package com.authsignal.sms
 
+import com.authsignal.RetryPolicy
 import com.authsignal.TokenCache
 import com.authsignal.sms.api.SMSAPI
 import com.authsignal.models.AuthsignalResponse
@@ -9,9 +10,10 @@ import com.authsignal.models.VerifyResponse
 
 class AuthsignalSMS(
   tenantID: String,
-  baseURL: String
+  baseURL: String,
+  retries: Int = RetryPolicy.DEFAULT_RETRIES,
 ) {
-  private val api = SMSAPI(tenantID, baseURL)
+  private val api = SMSAPI(tenantID, baseURL, retries)
   private val cache = TokenCache.shared
 
   suspend fun enroll(phoneNumber: String): AuthsignalResponse<EnrollResponse> {

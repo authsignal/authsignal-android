@@ -1,5 +1,6 @@
 package com.authsignal.totp
 
+import com.authsignal.RetryPolicy
 import com.authsignal.TokenCache
 import com.authsignal.totp.api.TOTPAPI
 import com.authsignal.models.AuthsignalResponse
@@ -8,9 +9,10 @@ import com.authsignal.models.VerifyResponse
 
 class AuthsignalTOTP(
   tenantID: String,
-  baseURL: String
+  baseURL: String,
+  retries: Int = RetryPolicy.DEFAULT_RETRIES,
 ) {
-  private val api = TOTPAPI(tenantID, baseURL)
+  private val api = TOTPAPI(tenantID, baseURL, retries)
   private val cache = TokenCache.shared
 
   suspend fun enroll(): AuthsignalResponse<EnrollTOTPResponse> {

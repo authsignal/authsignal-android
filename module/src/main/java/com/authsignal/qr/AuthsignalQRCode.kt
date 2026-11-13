@@ -3,6 +3,7 @@ package com.authsignal.qr
 import android.content.Context
 import com.authsignal.DeviceUtils
 import com.authsignal.KeyManager
+import com.authsignal.RetryPolicy
 import com.authsignal.SdkErrorCodes
 import com.authsignal.Signer
 import com.authsignal.TokenCache
@@ -15,8 +16,9 @@ import java.security.Signature
 class AuthsignalQRCode(
   tenantID: String,
   baseURL: String,
-  context: Context? = null) {
-  private val api = QRCodeAPI(tenantID, baseURL)
+  context: Context? = null,
+  retries: Int = RetryPolicy.DEFAULT_RETRIES) {
+  private val api = QRCodeAPI(tenantID, baseURL, retries)
   private val keyManager = KeyManager("qr_code")
   private val playIntegrityManager = PlayIntegrityManager(context)
 
