@@ -19,7 +19,7 @@ private const val TAG = "com.authsignal.passkey"
 
 private const val SIGNAL_API_MIN_SDK = 35
 
-private const val EXCLUDED_CREDENTIAL_ERROR_MESSAGE = "One of the excluded credentials exists on the local device"
+private const val EXCLUDED_CREDENTIAL_ERROR_MESSAGE = "An existing credential is already available for this device."
 
 class PasskeyManager(private val context: Context?) {
   private val credentialManager: CredentialManager? =
@@ -68,19 +68,10 @@ class PasskeyManager(private val context: Context?) {
       )
     } catch (e: CreatePublicKeyCredentialDomException) {
       if (e.domError is InvalidStateError) {
-        val matchedExcludedCredential = e.errorMessage?.contains(EXCLUDED_CREDENTIAL_ERROR_MESSAGE) ?: false
-
-        return if (matchedExcludedCredential) {
-          AuthsignalResponse(
-            error = "An existing credential is already available for this device.",
-            errorCode = SdkErrorCodes.MatchedExcludedCredential
-          )
-        } else {
-          AuthsignalResponse(
-            error = e.message,
-            errorCode = SdkErrorCodes.InvalidStateError
-          )
-        }
+        AuthsignalResponse(
+          error = e.errorMessage?.toString() ?: EXCLUDED_CREDENTIAL_ERROR_MESSAGE,
+          errorCode = SdkErrorCodes.MatchedExcludedCredential
+        )
       } else {
         AuthsignalResponse(
           error = e.message,
